@@ -118,10 +118,3 @@ void HuffmanTree::DecodeIterator::next(bool code) {
 
     currentNode = rootOfTree;
 }
-
-
-
-
-
-
-

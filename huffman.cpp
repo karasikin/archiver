@@ -9,11 +9,11 @@
 #include "huffmantree.h"
 #include "exception.h"
 
-Huffman::Huffman(const QByteArray &uncompressedBytes) : uncompressedBytes(uncompressedBytes + char(0xff))
-{
-    //string += str + QChar(0xff, 0xff);          // Добавляем признак конца последовательности
-
-}
+Huffman::Huffman(const QByteArray &uncompressedBytes, const char end_of_string, const char end_of_frequency)
+    : END_OF_STRING(end_of_string),
+      END_OF_FREQUENCY(end_of_frequency),
+      uncompressedBytes(uncompressedBytes + end_of_string)
+{}
 
 
 const QMap<char, int> *Huffman::frequencyAnalysis() {
@@ -114,14 +114,13 @@ const QByteArray *Huffman::encodeString(const QMap<char, QVector<bool>> *codeMap
 
     for(auto it = frequency->cbegin(); it != frequency->cend(); ++it) {
         encoded->push_back(it.key());
-        //encoded->push_back(it.key());
-        encoded->push_back(char(it.value() >> 24));
-        encoded->push_back(char(it.value() >> 16));
-        encoded->push_back(char(it.value() >> 8));
-        encoded->push_back(char(it.value()));
+        encoded->push_back(it.value() >> 24);
+        encoded->push_back(it.value() >> 16);
+        encoded->push_back(it.value() >> 8);
+        encoded->push_back(it.value());
     }
 
-    encoded->append(QByteArray(5, 0x00));  // Конец таблицы частот
+    encoded->append(QByteArray(5, END_OF_FREQUENCY));  // Конец таблицы частот
 
     unsigned char byte = 0;
     int bit_count = 0;
@@ -162,15 +161,14 @@ const QMap<char, int> *Huffman::decodeFrequency(QByteArray *code) const {
             }
 
             record.push_back(code->front());
-            //code->pop_front();
             code->remove(0, 1);    // Очень плохо переписать!!!!!!!!!
         }
-        if(std::all_of(record.cbegin(), record.cend(), [](const auto item){ return item == 0x0; })) {
+        if(std::all_of(record.cbegin(), record.cend(), [this](const auto item){ return item == END_OF_FREQUENCY; })) {
             break;
         }
 
         (*frequency)[record[0]] =
-            (uint(record[1]) << 24) + (uint(record[2]) << 16) + (uint(record[3]) << 8) + (uint(record[4]));
+            (int(uchar(record[1])) << 24) + (int(uchar(record[2])) << 16) + (int(uchar(record[3])) << 8) + int(uchar(record[4]));
     }
 
     return frequency;
@@ -183,14 +181,14 @@ const QByteArray *Huffman::decodeString(const HuffmanTree &tree, QByteArray *cod
     for(auto item : *code) {
         for(int i = 0; i < 8; ++i) {
             if(it.isLeaf()) {
-                if(it.getLabel() == QByteArray(1, char(0xff))) {  // Конец закодированной последовательности
+                if(it.getLabel() == QByteArray(1, END_OF_STRING)) {  // Конец закодированной последовательности
                     return decodedString;
                 }
 
                 decodedString->append(it.getLabel());
                 it.next(1);
             }
-            it.next( (item << i) & 0x80);
+            it.next((item << i) & 0x80);
         }
     }
 

@@ -10,13 +10,13 @@ class HuffmanTree;
  * Кодами хаффмана. И расскодирования кодов Хаффмана в строку?
  */
 
-/* НЕОБХОДИМО ПОДУМАТЬ: как записать таблицу частот символов в код */
 
 class Huffman
 {
 
 public:
-    Huffman(const QByteArray &uncompressedBytes);
+    Huffman(const QByteArray &uncompressedBytes,
+            const char end_of_string = char(0x00), const char end_of_frequency = char(0xff));
 
     /* Считает количество различных символов в строке
      * Возможно стоит переписать для любой внешней строки
@@ -66,7 +66,10 @@ private:
     const QByteArray *decodeString(const HuffmanTree &tree, QByteArray *code) const;
 
 private:
+    const char END_OF_STRING;
+    const char END_OF_FREQUENCY;
     QByteArray uncompressedBytes;
+
 };
 
 #endif // HUFFMAN_H
