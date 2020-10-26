@@ -9,23 +9,63 @@
 
 int main(int argc, char *argv[])
 {
-    auto text = FileWorker::readTextFromFile("../files/text_slojny.txt");
-    qDebug() << *text;
-    qDebug() << "----------------------------------";
+    auto text = QByteArray("Мама мыла рыму, рама мыла маму, маму мыла рама");
+    Huffman h(text);
 
-    auto bwt = BWT();
-    auto bwtString = bwt.getTransformedString(*text);
+    auto frequency = h.frequencyAnalysis();
 
-    qDebug() << *bwtString;
-    qDebug() << "----------------------------------";
+    std::for_each(text.cbegin(), text.cend(), [](const auto &item){
+        auto debug = qDebug();
+        debug << Qt::hex << int(item);
+    });
 
-    //bwt.setString(*bwtString);
-    auto primaryString = bwt.getPrimaryString(*bwtString);
+    for(auto it = frequency->cbegin(); it != frequency->cend(); ++it) {
+        auto debug = qDebug();
+        debug << Qt::hex << int(it.key()) << ":" << it.value();
+    }
 
-    qDebug() << *primaryString;
+    auto code = h.encode(frequency);
 
-    delete bwtString;
-    delete primaryString;
+    qDebug() << "--------------------------------------------";
+
+    std::for_each(code->cbegin(), code->cend(), [](const auto &item){
+        auto debug = qDebug();
+        debug << Qt::hex << int(item);
+    });
+
+    auto decodedText = h.decode(code);
+
+    qDebug() << "--------------------------------------------";
+
+    std::for_each(decodedText->cbegin(), decodedText->cend(), [](const auto &item){
+        auto debug = qDebug();
+        debug << Qt::hex << int(item);
+    });
+
+    qDebug() << (text == *decodedText);
+
+    delete frequency;
+    delete code;
+    delete decodedText;
+
+
+//    auto text = FileWorker::readTextFromFile("../files/text_slojny.txt");
+//    qDebug() << *text;
+//    qDebug() << "----------------------------------";
+
+//    auto bwt = BWT();
+//    auto bwtString = bwt.getTransformedString(*text);
+
+//    qDebug() << *bwtString;
+//    qDebug() << "----------------------------------";
+
+//    //bwt.setString(*bwtString);
+//    auto primaryString = bwt.getPrimaryString(*bwtString);
+
+//    qDebug() << *primaryString;
+
+//    delete bwtString;
+//    delete primaryString;
 
 
 //    Huffman h(*text);

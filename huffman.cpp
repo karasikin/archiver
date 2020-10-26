@@ -9,21 +9,22 @@
 #include "huffmantree.h"
 #include "exception.h"
 
-Huffman::Huffman(const QString &str)
+Huffman::Huffman(const QByteArray &uncompressedBytes) : uncompressedBytes(uncompressedBytes + char(0xff))
 {
-    string += str + QChar(0xff, 0xff);          // Добавляем признак конца последовательности
+    //string += str + QChar(0xff, 0xff);          // Добавляем признак конца последовательности
+
 }
 
 
-const QMap<QChar, int> *Huffman::frequencyAnalysis() {
-    auto frequency = new QMap<QChar, int>;
-    for(const auto &ch : string)
+const QMap<char, int> *Huffman::frequencyAnalysis() {
+    auto frequency = new QMap<char, int>;
+    for(const auto &ch : uncompressedBytes)
         (*frequency)[ch]++;
 
     return frequency;
 }
 
-const QVector<unsigned char> *Huffman::encode(const QMap<QChar, int> *frequency) {
+const QByteArray *Huffman::encode(const QMap<char, int> *frequency) {
     auto nodeStack = buildNodeStack(frequency);
     auto codeMap = buildCodesMap(nodeStack);
     auto code = encodeString(codeMap, frequency);
@@ -34,9 +35,9 @@ const QVector<unsigned char> *Huffman::encode(const QMap<QChar, int> *frequency)
     return code;
 }
 
-const QString *Huffman::decode(const QVector<unsigned char> *code) const {
+const QByteArray *Huffman::decode(const QByteArray *code) const {
     // Наш код, который мы будем преобразовывать
-    auto transformedCode = new QVector<unsigned char> {code->cbegin(), code->cend()};
+    auto transformedCode = new QByteArray(*code);
 
     // Извлекаем частоты символов
     auto frequency = decodeFrequency(transformedCode);
@@ -63,26 +64,26 @@ const QString *Huffman::decode(const QVector<unsigned char> *code) const {
     return decoded;
 }
 
-QStack<QPair<QString, int>> *Huffman::buildNodeStack(const QMap<QChar, int> *frequency) const {
-    auto comp = [](const int left, const int right) {
-        return left < right;
-    };
-
-    QMap<QString, int> transformedFrequency;
+QStack<QPair<QByteArray, int>> *Huffman::buildNodeStack(const QMap<char, int> *frequency) const {
+    QMap<QByteArray, int> transformedFrequency;
     for(auto it = frequency->cbegin(); it != frequency->cend(); ++it) {
-        transformedFrequency[it.key()] = it.value();
+        transformedFrequency[{1, it.key()}] = it.value();
     }
 
-    auto nodeStack = new QStack<QPair<QString, int>>;
+    auto nodeStack = new QStack<QPair<QByteArray, int>>;
 
     for(auto item = transformedFrequency.cbegin(); item != transformedFrequency.cend(); ++item) {
         nodeStack->push({item.key(), item.value()});
     }
 
+    auto comp = [](const auto &left, const auto &right) {
+        return left < right;
+    };
+
     while(transformedFrequency.size() > 1) {
         auto minFirst = std::min_element(transformedFrequency.cbegin(), transformedFrequency.cend(), comp);
-        QString newKey = minFirst.key();
-        int newValue = minFirst.value();
+        auto newKey = minFirst.key();
+        auto newValue = minFirst.value();
         transformedFrequency.remove(minFirst.key());
 
         auto minSecond = std::min_element(transformedFrequency.cbegin(), transformedFrequency.cend(), comp);
@@ -97,7 +98,7 @@ QStack<QPair<QString, int>> *Huffman::buildNodeStack(const QMap<QChar, int> *fre
     return nodeStack;
 }
 
-const QMap<QChar, QVector<bool>> *Huffman::buildCodesMap(QStack<QPair<QString, int>> *nodeStack) const {
+const QMap<char, QVector<bool>> *Huffman::buildCodesMap(QStack<QPair<QByteArray, int>> *nodeStack) const {
     HuffmanTree tree;
 
     while(!nodeStack->empty()) {
@@ -107,25 +108,25 @@ const QMap<QChar, QVector<bool>> *Huffman::buildCodesMap(QStack<QPair<QString, i
     return tree.getCodes();
 }
 
-const QVector<unsigned char> *Huffman::encodeString(const QMap<QChar, QVector<bool>> *codeMap,
-                                                    const QMap<QChar, int> *frequency) const {
-    auto encoded = new QVector<unsigned char>;
+const QByteArray *Huffman::encodeString(const QMap<char, QVector<bool>> *codeMap,
+                                                    const QMap<char, int> *frequency) const {
+    auto encoded = new QByteArray;
 
     for(auto it = frequency->cbegin(); it != frequency->cend(); ++it) {
-        encoded->push_back(it.key().cell());
-        encoded->push_back(it.key().row());
-        encoded->push_back(uchar(it.value() >> 24));
-        encoded->push_back(uchar(it.value() >> 16));
-        encoded->push_back(uchar(it.value() >> 8));
-        encoded->push_back(uchar(it.value()));
+        encoded->push_back(it.key());
+        //encoded->push_back(it.key());
+        encoded->push_back(char(it.value() >> 24));
+        encoded->push_back(char(it.value() >> 16));
+        encoded->push_back(char(it.value() >> 8));
+        encoded->push_back(char(it.value()));
     }
 
-    encoded->append({0x0, 0x0, 0x0, 0x0, 0x0, 0x0});  // Конец таблицы частот
+    encoded->append(QByteArray(5, 0x00));  // Конец таблицы частот
 
     unsigned char byte = 0;
     int bit_count = 0;
 
-    for(const auto &ch : string) {
+    for(const auto &ch : uncompressedBytes) {
         const auto &code = (*codeMap)[ch];
         for(const auto &bit : code) {
             if(bit_count == 8) {
@@ -148,45 +149,45 @@ const QVector<unsigned char> *Huffman::encodeString(const QMap<QChar, QVector<bo
     return encoded;
 }
 
-const QMap<QChar, int> *Huffman::decodeFrequency(QVector<unsigned char> *code) const {
-    const int RECORD_BYTE_SIZE = 6;
-    auto frequency = new QMap<QChar, int>;
+const QMap<char, int> *Huffman::decodeFrequency(QByteArray *code) const {
+    const int RECORD_BYTE_SIZE = 5;
+    auto frequency = new QMap<char, int>;
 
     while(true) {
-
-        QVector<unsigned char> record(RECORD_BYTE_SIZE);
+        QByteArray record;
         for(int i = 0; i < RECORD_BYTE_SIZE; ++i) {
             if(code->isEmpty()) {
                 delete frequency;
                 throw BadCodeException();
             }
 
-            record[i] = code->front();
-            code->pop_front();
+            record.push_back(code->front());
+            //code->pop_front();
+            code->remove(0, 1);    // Очень плохо переписать!!!!!!!!!
         }
-        if(std::all_of(record.cbegin(), record.cend(), [](unsigned char item){ return item == 0; })) {
+        if(std::all_of(record.cbegin(), record.cend(), [](const auto item){ return item == 0x0; })) {
             break;
         }
 
-        (*frequency)[{record[0], record[1]}] =
-            (int(record[2]) << 24) + (int(record[3]) << 16) + (int(record[4]) << 8) + (int(record[5]));
+        (*frequency)[record[0]] =
+            (uint(record[1]) << 24) + (uint(record[2]) << 16) + (uint(record[3]) << 8) + (uint(record[4]));
     }
 
     return frequency;
 }
 
-const QString *Huffman::decodeString(const HuffmanTree &tree, QVector<unsigned char> *code) const {
+const QByteArray *Huffman::decodeString(const HuffmanTree &tree, QByteArray *code) const {
     auto it = tree.getDecodeIterator();
-    auto decodedString = new QString;
+    auto decodedString = new QByteArray;
 
     for(auto item : *code) {
         for(int i = 0; i < 8; ++i) {
             if(it.isLeaf()) {
-                if(it.getLabel() == QChar(0xff, 0xff)) {  // Конец закодированной последовательности
+                if(it.getLabel() == QByteArray(1, char(0xff))) {  // Конец закодированной последовательности
                     return decodedString;
                 }
 
-                *decodedString += it.getLabel();
+                decodedString->append(it.getLabel());
                 it.next(1);
             }
             it.next( (item << i) & 0x80);

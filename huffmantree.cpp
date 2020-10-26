@@ -6,7 +6,7 @@ HuffmanTree::~HuffmanTree() {
     removeTree(&root);
 }
 
-void HuffmanTree::insert(const QPair<QString, int> &data) {
+void HuffmanTree::insert(const QPair<QByteArray, int> &data) {
     insertHelper(data, &root);
 }
 
@@ -14,27 +14,27 @@ HuffmanTree::DecodeIterator HuffmanTree::getDecodeIterator() const {
     return HuffmanTree::DecodeIterator(root);
 }
 
-const QMap<QChar, QVector<bool>> *HuffmanTree::getCodes() const {
-    auto codes = new QMap<QChar, QVector<bool>>;
+const QMap<char, QVector<bool>> *HuffmanTree::getCodes() const {
+    auto codes = new QMap<char, QVector<bool>>;
 
     getCodesHelper({}, codes, root);
 
     return codes;
 }
 
-void HuffmanTree::insertHelper(const QPair<QString, int> &data, Node **root) {
+void HuffmanTree::insertHelper(const QPair<QByteArray, int> &data, Node **root) {
     if(*root == nullptr) {
         *root = new Node(data);
         return;
     }
 
-    QString newNodeKey = data.first;
-    QString currentNodeKey = (*root)->data.first;
+    QByteArray newNodeKey = data.first;
+    QByteArray currentNodeKey = (*root)->data.first;
 
     // Если текущий элемент является подстрокой правого или левого потомка
     // То посылем его к соответствующему новому корню
     if((*root)->leftChild) {
-        QString leftChildNodeKey = (*root)->leftChild->data.first;
+        QByteArray leftChildNodeKey = (*root)->leftChild->data.first;
         if(leftChildNodeKey.contains(newNodeKey)) {
             insertHelper(data, &(*root)->leftChild);
             return;
@@ -42,7 +42,7 @@ void HuffmanTree::insertHelper(const QPair<QString, int> &data, Node **root) {
     }
 
     if((*root)->rightChild) {
-        QString rightChildNodeKey = (*root)->rightChild->data.first;
+        QByteArray rightChildNodeKey = (*root)->rightChild->data.first;
         if(rightChildNodeKey.contains(newNodeKey)) {
             insertHelper(data, &(*root)->rightChild);
             return;
@@ -56,7 +56,7 @@ void HuffmanTree::insertHelper(const QPair<QString, int> &data, Node **root) {
         insertHelper(data, &(*root)->rightChild);
 }
 
-void HuffmanTree::getCodesHelper(QVector<bool> code, QMap<QChar, QVector<bool>> *codes, Node *root) const {
+void HuffmanTree::getCodesHelper(QVector<bool> code, QMap<char, QVector<bool>> *codes, Node *root) const {
     if(!root) {
         return;
     }
@@ -101,7 +101,7 @@ bool HuffmanTree::DecodeIterator::isLeaf() const {
     return !currentNode->leftChild && !currentNode->rightChild;
 }
 
-const QString &HuffmanTree::DecodeIterator::getLabel() const {
+const QByteArray &HuffmanTree::DecodeIterator::getLabel() const {
     return currentNode->data.first;
 }
 
