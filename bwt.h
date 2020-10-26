@@ -1,20 +1,19 @@
 #ifndef BWT_H
 #define BWT_H
 
-#include <QString>
-#include <QVector>
+class QByteArray;
 
 class BWT
 {
 
 public:
-    explicit BWT(const QChar end_of_string = QChar(0x00, 0x00));
+    explicit BWT(const char end_of_string = char(0x00));
 
-    QString *getTransformedString(const QString &string) const;
-    QString *getPrimaryString(const QString &transformedString) const;
+    QByteArray *getTransformedString(const QByteArray &string) const;
+    QByteArray *getPrimaryString(const QByteArray &transformedStiring) const;
 
 private:
-    const QChar END_OF_STRING;
+    const char END_OF_STRING;
 
 };
 

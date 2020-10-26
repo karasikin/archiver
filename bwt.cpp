@@ -2,19 +2,19 @@
 
 #include <QDebug>
 
-BWT::BWT(const QChar end_of_string) : END_OF_STRING(end_of_string) {}
+BWT::BWT(const char end_of_string) : END_OF_STRING(end_of_string) {}
 
-QString *BWT::getTransformedString(const QString &string) const {
-    auto transformedString = new QString;                       // Преобразованная строка
-    auto buffer = QString(string + END_OF_STRING);              // В этой строке проводим преобразование
-    auto stringSize = string.size() + 1;                        // Размер преобразованной строки
-    auto stringMatrix = QVector<QString::const_iterator>();     // Итераторы подстрок в буффере
+QByteArray *BWT::getTransformedString(const QByteArray &string) const {
+    auto transformedString = new QByteArray;                       // Преобразованная строка
+    auto buffer = QByteArray(string + END_OF_STRING);              // В этой строке проводим преобразование
+    auto stringSize = string.size() + 1;                           // Размер преобразованной строки
+    auto stringMatrix = QVector<QByteArray::const_iterator>();     // Итераторы подстрок в буффере
 
     // Заполняем буффер и вектор итераторов
 
     if(!string.isEmpty()) {
-        for(auto it = string.cbegin(); it != string.cend(); ++it) {
-                buffer += *it;
+        for(const auto ch : string) {
+                buffer += ch;
         }
 
         for(auto it = buffer.cbegin(); it != buffer.cend() - stringSize + 1; ++it) {
@@ -50,10 +50,10 @@ QString *BWT::getTransformedString(const QString &string) const {
     return transformedString;
 }
 
-QString *BWT::getPrimaryString(const QString &transformedString) const {
-    auto primaryString = new QString(transformedString.size() - 1, ' ');  // По-моему нельзя задать просто размер
-    auto firstCountTable = QVector<QPair<QChar, int>>();                  // { Символ : Количество таких же символов до текущего в строке }
-    auto secondCountTable = QMap<QChar, int>();                           // { Символ : Количество "меньших" символов в строке
+QByteArray *BWT::getPrimaryString(const QByteArray &transformedString) const {
+    auto primaryString = new QByteArray(transformedString.size() - 1, ' ');  // По-моему нельзя задать просто размер
+    auto firstCountTable = QVector<QPair<char, int>>();                     // { Символ : Количество таких же символов до текущего в строке }
+    auto secondCountTable = QMap<char, int>();                              // { Символ : Количество "меньших" символов в строке
 
 
     // Формируем firstCountTable
