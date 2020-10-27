@@ -17,7 +17,7 @@ Huffman::Huffman(const char end_of_string, const char end_of_frequency)
 
 const QMap<char, int> *Huffman::frequencyAnalysis(const QByteArray &bytes) {
     auto frequency = new QMap<char, int>;
-    for(const auto &ch : bytes + END_OF_STRING)
+    for(const auto &ch : bytes)
         (*frequency)[ch]++;
 
     return frequency;
@@ -26,7 +26,7 @@ const QMap<char, int> *Huffman::frequencyAnalysis(const QByteArray &bytes) {
 const QByteArray *Huffman::encode(const QByteArray &bytes, const QMap<char, int> *frequency) {
     auto nodeStack = buildNodeStack(frequency);
     auto codeMap = buildCodesMap(nodeStack);
-    auto code = encodeString(bytes + END_OF_STRING, codeMap, frequency);
+    auto code = encodeString(bytes, codeMap, frequency);
 
     delete nodeStack;
     delete codeMap;
@@ -113,6 +113,16 @@ const QByteArray *Huffman::encodeString(const QByteArray &bytes,
 {
     auto encoded = new QByteArray;
 
+
+    // Логически делится на две функциии реализовать!!!!!!!!!!!!!!!!!!!!
+
+    // Пишем размер таблицы частот
+    int frequencySize = frequency->size();
+    encoded->push_back(frequencySize >> 24);
+    encoded->push_back(frequencySize >> 16);
+    encoded->push_back(frequencySize >> 8);
+    encoded->push_back(frequencySize);
+
     for(auto it = frequency->cbegin(); it != frequency->cend(); ++it) {
         encoded->push_back(it.key());
         encoded->push_back(it.value() >> 24);
@@ -121,7 +131,12 @@ const QByteArray *Huffman::encodeString(const QByteArray &bytes,
         encoded->push_back(it.value());
     }
 
-    encoded->append(QByteArray(5, END_OF_FREQUENCY));  // Конец таблицы частот
+    // Пишем размер текста
+    int byteCount = bytes.size();
+    encoded->push_back(byteCount >> 24);
+    encoded->push_back(byteCount >> 16);
+    encoded->push_back(byteCount >> 8);
+    encoded->push_back(byteCount);
 
     unsigned char byte = 0;
     int bit_count = 0;
@@ -153,7 +168,14 @@ const QMap<char, int> *Huffman::decodeFrequency(QByteArray *code) const {
     const int RECORD_BYTE_SIZE = 5;
     auto frequency = new QMap<char, int>;
 
-    while(true) {
+    int frequencySize = (int(uchar((*code)[0])) << 24) + (int(uchar((*code)[1])) << 16) +
+            (int(uchar((*code)[2])) << 8) + (int(uchar((*code)[3])));
+
+    code->remove(0, 4);
+
+    qDebug() << "fsize: " << frequencySize;
+
+    while(frequencySize--) {
         QByteArray record;
         for(int i = 0; i < RECORD_BYTE_SIZE; ++i) {
             if(code->isEmpty()) {
@@ -163,9 +185,6 @@ const QMap<char, int> *Huffman::decodeFrequency(QByteArray *code) const {
 
             record.push_back(code->front());
             code->remove(0, 1);    // Очень плохо переписать!!!!!!!!!
-        }
-        if(std::all_of(record.cbegin(), record.cend(), [this](const auto item){ return item == END_OF_FREQUENCY; })) {
-            break;
         }
 
         (*frequency)[record[0]] = (int(uchar(record[1])) << 24) +
@@ -179,17 +198,29 @@ const QByteArray *Huffman::decodeString(const HuffmanTree &tree, QByteArray *cod
     auto it = tree.getDecodeIterator();
     auto decodedString = new QByteArray;
 
+    int byteCount = (int(uchar((*code)[0])) << 24) + (int(uchar((*code)[1])) << 16) +
+            (int(uchar((*code)[2])) << 8) + (int(uchar((*code)[3])));
+    code->remove(0, 4);
+
+    if(!byteCount) {
+        return decodedString;
+    }
+
     for(auto item : *code) {
         for(int i = 0; i < 8; ++i) {
+
+            it.next((item << i) & 0x80);
+
             if(it.isLeaf()) {
-                if(it.getLabel() == QByteArray(1, END_OF_STRING)) {  // Конец закодированной последовательности
-                    return decodedString;
-                }
 
                 decodedString->append(it.getLabel());
                 it.next(1);
+
+                if(! --byteCount) {
+                    return decodedString;
+                }
             }
-            it.next((item << i) & 0x80);
+
         }
     }
 
