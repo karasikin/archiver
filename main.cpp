@@ -63,42 +63,42 @@ int main(int argc, char *argv[]) {
 //    delete transformed;
 
 
-try{
-    {
-        auto uncompressed = FileWorker::readFromFile("../files/text.txt");
-        auto h = Huffman();
-        auto frequency = h.frequencyAnalysis(*uncompressed);
-        auto compressed = h.encode(*uncompressed, frequency);
-        FileWorker::writeToFile("../files/arch.huff", *compressed);
+//try{
+//    {
+//        auto uncompressed = FileWorker::readFromFile("../files/text.txt");
+//        auto h = Huffman();
+//        auto frequency = h.frequencyAnalysis(*uncompressed);
+//        auto compressed = h.encode(*uncompressed, frequency);
+//        FileWorker::writeToFile("../files/arch.huff", *compressed);
 
-        qDebug() << *uncompressed;
+//        qDebug() << *uncompressed;
 
-        auto debug = qDebug();
-        for(auto byte : *compressed) {
-            debug << Qt::hex << int(byte) << " ";
-        }
+//        auto debug = qDebug();
+//        for(auto byte : *compressed) {
+//            debug << Qt::hex << int(byte) << " ";
+//        }
 
-        delete compressed;
-        delete frequency;
-        delete uncompressed;
-    }
+//        delete compressed;
+//        delete frequency;
+//        delete uncompressed;
+//    }
 
-    {
-        auto compressed = FileWorker::readFromFile("../files/arch.huff");
-        auto h = Huffman();
-        auto uncompressed = h.decode(compressed);
-        FileWorker::writeToFile("../files/uncompress.txt", *uncompressed);
+//    {
+//        auto compressed = FileWorker::readFromFile("../files/arch.huff");
+//        auto h = Huffman();
+//        auto uncompressed = h.decode(compressed);
+//        FileWorker::writeToFile("../files/uncompress.txt", *uncompressed);
 
-        qDebug() << *uncompressed;
+//        qDebug() << *uncompressed;
 
-        delete compressed;
-        delete uncompressed;
-    }
-} catch(std::exception &ex) {
-        qDebug() << ex.what();
-} catch(...) {
-        qDebug() << "что-то";
-    }
+//        delete compressed;
+//        delete uncompressed;
+//    }
+//} catch(std::exception &ex) {
+//        qDebug() << ex.what();
+//} catch(...) {
+//        qDebug() << "что-то";
+//    }
 
 //    auto bwt = BWT();
 //    auto bytes = FileWorker::readFromFile("../files/text.txt");
