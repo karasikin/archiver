@@ -9,25 +9,24 @@
 #include "huffmantree.h"
 #include "exception.h"
 
-Huffman::Huffman(const QByteArray &uncompressedBytes, const char end_of_string, const char end_of_frequency)
+Huffman::Huffman(const char end_of_string, const char end_of_frequency)
     : END_OF_STRING(end_of_string),
-      END_OF_FREQUENCY(end_of_frequency),
-      uncompressedBytes(uncompressedBytes + end_of_string)
+      END_OF_FREQUENCY(end_of_frequency)
 {}
 
 
-const QMap<char, int> *Huffman::frequencyAnalysis() {
+const QMap<char, int> *Huffman::frequencyAnalysis(const QByteArray &bytes) {
     auto frequency = new QMap<char, int>;
-    for(const auto &ch : uncompressedBytes)
+    for(const auto &ch : bytes + END_OF_STRING)
         (*frequency)[ch]++;
 
     return frequency;
 }
 
-const QByteArray *Huffman::encode(const QMap<char, int> *frequency) {
+const QByteArray *Huffman::encode(const QByteArray &bytes, const QMap<char, int> *frequency) {
     auto nodeStack = buildNodeStack(frequency);
     auto codeMap = buildCodesMap(nodeStack);
-    auto code = encodeString(codeMap, frequency);
+    auto code = encodeString(bytes + END_OF_STRING, codeMap, frequency);
 
     delete nodeStack;
     delete codeMap;
@@ -108,8 +107,10 @@ const QMap<char, QVector<bool>> *Huffman::buildCodesMap(QStack<QPair<QByteArray,
     return tree.getCodes();
 }
 
-const QByteArray *Huffman::encodeString(const QMap<char, QVector<bool>> *codeMap,
-                                                    const QMap<char, int> *frequency) const {
+const QByteArray *Huffman::encodeString(const QByteArray &bytes,
+                                        const QMap<char, QVector<bool>> *codeMap,
+                                        const QMap<char, int> *frequency) const
+{
     auto encoded = new QByteArray;
 
     for(auto it = frequency->cbegin(); it != frequency->cend(); ++it) {
@@ -125,7 +126,7 @@ const QByteArray *Huffman::encodeString(const QMap<char, QVector<bool>> *codeMap
     unsigned char byte = 0;
     int bit_count = 0;
 
-    for(const auto &ch : uncompressedBytes) {
+    for(const auto &ch : bytes) {
         const auto &code = (*codeMap)[ch];
         for(const auto &bit : code) {
             if(bit_count == 8) {
@@ -167,8 +168,8 @@ const QMap<char, int> *Huffman::decodeFrequency(QByteArray *code) const {
             break;
         }
 
-        (*frequency)[record[0]] =
-            (int(uchar(record[1])) << 24) + (int(uchar(record[2])) << 16) + (int(uchar(record[3])) << 8) + int(uchar(record[4]));
+        (*frequency)[record[0]] = (int(uchar(record[1])) << 24) +
+                (int(uchar(record[2])) << 16) + (int(uchar(record[3])) << 8) + int(uchar(record[4]));
     }
 
     return frequency;

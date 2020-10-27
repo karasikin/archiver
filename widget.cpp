@@ -2,6 +2,7 @@
 #include "ui_widget.h"
 
 #include <QFileDialog>
+#include <QDebug>
 
 #include "fileworker.h"
 #include "exception.h"
@@ -11,6 +12,7 @@ Widget::Widget(QWidget *parent)
       ui(new Ui::Widget),
       bwt(),
       mtf(),
+      huffman(),
       currentWorkingFile("")
 
 {
@@ -27,7 +29,7 @@ Widget::~Widget()
 }
 
 void Widget::onSelectFileButton() {
-    currentWorkingFile = QFileDialog::getOpenFileName(this, "Выбор файла", "/home");
+    currentWorkingFile = QFileDialog::getOpenFileName(this, "Выбор файла", "");
     ui->filenameLineEdit->setText(currentWorkingFile);
 }
 
@@ -35,20 +37,27 @@ void Widget::onArchiveButton() {
     const QByteArray *input = nullptr;
     const QByteArray *bwtEncoded = nullptr;
     const QByteArray *mtfEncoded = nullptr;
+    const QMap<char, int> *frequensy = nullptr;
+    const QByteArray *huffmanEncoded = nullptr;
 
     try {
         input = FileWorker::readFromFile(currentWorkingFile);
-        bwtEncoded = bwt.encode(*input);
-        mtfEncoded = mtf.encode(*bwtEncoded);
-        FileWorker::writeToFile(currentWorkingFile + extension, *mtfEncoded);
+//        bwtEncoded = bwt.encode(*input);
+        mtfEncoded = mtf.encode(*input);
+        frequensy = huffman.frequencyAnalysis(*mtfEncoded);
+        huffmanEncoded = huffman.encode(*mtfEncoded, frequensy);
+
+        FileWorker::writeToFile(currentWorkingFile + extension, *huffmanEncoded);
         ui->informationTextEdit->append(QString("%1 > %2").arg(currentWorkingFile).arg(currentWorkingFile + extension));
     } catch(std::exception &ex) {
         ui->informationTextEdit->append(ex.what());
     }
 
-    delete input;
-    delete bwtEncoded;
+    delete huffmanEncoded;
+    delete frequensy;
     delete mtfEncoded;
+    delete bwtEncoded;
+    delete input;
 }
 
 void Widget::onUnarchiveButton() {
@@ -61,19 +70,26 @@ void Widget::onUnarchiveButton() {
     const QByteArray *input = nullptr;
     const QByteArray *mtfDecoded = nullptr;
     const QByteArray *bwtDecoded = nullptr;
+    const QByteArray *huffmanDecoded = nullptr;
 
     try {
         input = FileWorker::readFromFile(currentWorkingFile);
-        mtfDecoded = mtf.decode(*input);
-        bwtDecoded = bwt.decode(*mtfDecoded);
+        huffmanDecoded = huffman.decode(input);
+        mtfDecoded = mtf.decode(*huffmanDecoded);
+//        bwtDecoded = bwt.decode(*mtfDecoded);
+
         QString newName(currentWorkingFile);
-        std::remove(newName.rbegin(), newName.rbegin() + extension.size(), newName);
-        FileWorker::writeToFile(newName, *bwtDecoded);
+        newName.remove(newName.size() - extension.size(), extension.size());
+        newName.append(".uncomp");
+
+        FileWorker::writeToFile(newName, *mtfDecoded);
+        ui->informationTextEdit->append(QString("%1 > %2").arg(currentWorkingFile).arg(newName));
     }  catch (std::exception &ex) {
         ui->informationTextEdit->append(ex.what());
     }
 
-    delete input;
-    delete mtfDecoded;
+    delete huffmanDecoded;
     delete bwtDecoded;
+    delete mtfDecoded;
+    delete input;
 }

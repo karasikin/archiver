@@ -15,19 +15,18 @@ class Huffman
 {
 
 public:
-    Huffman(const QByteArray &uncompressedBytes,
-            const char end_of_string = char(0x00), const char end_of_frequency = char(0xff));
+    Huffman(const char end_of_string = char(0x00), const char end_of_frequency = char(0xff));
 
     /* Считает количество различных символов в строке
      * Возможно стоит переписать для любой внешней строки
      * Возвращает QMap {символ : количество*/
 
-    const QMap<char, int> *frequencyAnalysis();
+    const QMap<char, int> *frequencyAnalysis(const QByteArray &bytes);
 
     /* На основе частоты из frequency кодирует строку
      * Возвращает массив unsigned char (байтов) пригодных для записи в файл */
 
-    const QByteArray *encode(const QMap<char, int> *frequency);
+    const QByteArray *encode(const QByteArray &bytes, const QMap<char, int> *frequency);
 
     /* Функция должна раскодировать код из вестора code,
      * И вернуть раскодированную строку */
@@ -50,7 +49,7 @@ private:
      * Уплотняет коды в unsigned char, записывает их в QVector<unsigned char>, после чего возвращает
      * этот вестор*/
 
-    const QByteArray *encodeString(const QMap<char, QVector<bool>> *codeMap,
+    const QByteArray *encodeString(const QByteArray &bytes, const QMap<char, QVector<bool>> *codeMap,
                                                const QMap<char, int> *frequency) const;
 
     /* Извлекает из закодированной последовательности информацию о частотах символов,
@@ -68,7 +67,7 @@ private:
 private:
     const char END_OF_STRING;
     const char END_OF_FREQUENCY;
-    QByteArray uncompressedBytes;
+    //QByteArray uncompressedBytes;
 
 };
 

@@ -5,6 +5,7 @@
 
 #include "bwt.h"
 #include "mtf.h"
+#include "huffman.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class Widget; }
@@ -28,6 +29,7 @@ private:
 
     BWT bwt;
     MTF mtf;
+    Huffman huffman;
 
     QString currentWorkingFile;
     const QString extension = ".ibzip2";
