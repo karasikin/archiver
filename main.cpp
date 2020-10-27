@@ -9,27 +9,58 @@
 #include "mtf.h"
 
 int main(int argc, char *argv[]) {
-    auto mtf = MTF();
-    auto bytes = FileWorker::readFromFile("../files/text.txt");
-    auto transformed = mtf.encode(*bytes);
-    FileWorker::writeToFile("../files/code.mtf", *transformed);
+//    auto bwt = BWT();
+//    auto mtf = MTF();
 
-    {
-    auto deb = qDebug();
-    for(const auto ch : *transformed) {
-        deb << Qt::hex << int(ch) << " ";
-    }
-    }
+//    auto input = QByteArray("mama myla ramy. Ramu myla mama.");
 
-    auto compressed = FileWorker::readFromFile("../files/code.mtf");
-    auto primary = mtf.decode(*transformed);
-    FileWorker::writeToFile("../files/uncompressed.txt", *primary);
+//    // encode
+
+//    auto bwtCode = bwt.getTransformedString(input);
+//    auto mtfCode = mtf.encode(*bwtCode);
+
+//    {
+//        auto debug = qDebug();
+//        for(auto ch : *mtfCode) {
+//            debug << Qt::hex << uchar(ch) << " ";
+//        }
+//    }
+
+//    // decode
+
+//    auto mtfEncoded = mtf.decode(*mtfCode);
+//    auto bwtEncoded = bwt.getPrimaryString(*mtfEncoded);
+
+//    qDebug() << *bwtEncoded;
+
+//    delete mtfEncoded;
+//    delete bwtEncoded;
+//    delete bwtCode;
+//    delete mtfCode;
 
 
-    delete compressed;
-    delete bytes;
-    delete primary;
-    delete transformed;
+
+//    auto mtf = MTF();
+//    auto bytes = FileWorker::readFromFile("../files/text.txt");
+//    auto transformed = mtf.encode(*bytes);
+//    FileWorker::writeToFile("../files/code.mtf", *transformed);
+
+//    {
+//    auto deb = qDebug();
+//    for(const auto ch : *transformed) {
+//        deb << Qt::hex << int(ch) << " ";
+//    }
+//    }
+
+//    auto compressed = FileWorker::readFromFile("../files/code.mtf");
+//    auto primary = mtf.decode(*transformed);
+//    FileWorker::writeToFile("../files/uncompressed.txt", *primary);
+
+
+//    delete compressed;
+//    delete bytes;
+//    delete primary;
+//    delete transformed;
 
 
 

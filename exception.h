@@ -36,8 +36,7 @@ private:
 
 
 class BadCodeException : public std::exception {
-    //BadCodeException() : std::exception() {}
-
+public:
     virtual const char *what() const noexcept override {
         return "BadCodeException: archive is probably damaged";
     }

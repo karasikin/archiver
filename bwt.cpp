@@ -4,7 +4,7 @@
 
 BWT::BWT(const char end_of_string) : END_OF_STRING(end_of_string) {}
 
-QByteArray *BWT::getTransformedString(const QByteArray &string) const {
+QByteArray *BWT::encode(const QByteArray &string) const {
     auto transformedString = new QByteArray;                       // Преобразованная строка
     auto buffer = QByteArray(string + END_OF_STRING);              // В этой строке проводим преобразование
     auto stringSize = string.size() + 1;                           // Размер преобразованной строки
@@ -50,7 +50,7 @@ QByteArray *BWT::getTransformedString(const QByteArray &string) const {
     return transformedString;
 }
 
-QByteArray *BWT::getPrimaryString(const QByteArray &transformedString) const {
+QByteArray *BWT::decode(const QByteArray &transformedString) const {
     auto primaryString = new QByteArray(transformedString.size() - 1, ' ');  // По-моему нельзя задать просто размер
     auto firstCountTable = QVector<QPair<char, int>>();                     // { Символ : Количество таких же символов до текущего в строке }
     auto secondCountTable = QMap<char, int>();                              // { Символ : Количество "меньших" символов в строке
