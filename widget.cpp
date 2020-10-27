@@ -48,7 +48,10 @@ void Widget::onArchiveButton() {
         huffmanEncoded = huffman.encode(*mtfEncoded, frequensy);
 
         FileWorker::writeToFile(currentWorkingFile + extension, *huffmanEncoded);
-        ui->informationTextEdit->append(QString("%1 > %2").arg(currentWorkingFile).arg(currentWorkingFile + extension));
+        ui->informationTextEdit->append(QString("%1 >> %2").arg(currentWorkingFile)
+                                        .arg(currentWorkingFile + extension));
+        ui->informationTextEdit->append(QString("{%1 K >> %2 K}")
+                                        .arg(input->size() / 1024).arg(huffmanEncoded->size() / 1024));
     } catch(std::exception &ex) {
         ui->informationTextEdit->append(ex.what());
     }
@@ -83,7 +86,7 @@ void Widget::onUnarchiveButton() {
         newName.append(".uncomp");
 
         FileWorker::writeToFile(newName, *bwtDecoded);
-        ui->informationTextEdit->append(QString("%1 > %2").arg(currentWorkingFile).arg(newName));
+        ui->informationTextEdit->append(QString("%1 >> %2").arg(currentWorkingFile).arg(newName));
     }  catch (std::exception &ex) {
         ui->informationTextEdit->append(ex.what());
     }

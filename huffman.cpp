@@ -9,12 +9,6 @@
 #include "huffmantree.h"
 #include "exception.h"
 
-Huffman::Huffman(const char end_of_string, const char end_of_frequency)
-    : END_OF_STRING(end_of_string),
-      END_OF_FREQUENCY(end_of_frequency)
-{}
-
-
 const QMap<char, int> *Huffman::frequencyAnalysis(const QByteArray &bytes) {
     auto frequency = new QMap<char, int>;
     for(const auto &ch : bytes)

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>801</width>
-    <height>561</height>
+    <width>1072</width>
+    <height>615</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -24,13 +24,19 @@
     <rect>
      <x>20</x>
      <y>20</y>
-     <width>761</width>
-     <height>521</height>
+     <width>1031</width>
+     <height>571</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout_2">
     <item>
      <widget class="QTextEdit" name="informationTextEdit">
+      <property name="font">
+       <font>
+        <family>JetBrains Mono Medium</family>
+        <pointsize>14</pointsize>
+       </font>
+      </property>
       <property name="autoFormatting">
        <set>QTextEdit::AutoAll</set>
       </property>
@@ -64,6 +70,11 @@
             <height>31</height>
            </size>
           </property>
+          <property name="font">
+           <font>
+            <pointsize>12</pointsize>
+           </font>
+          </property>
           <property name="text">
            <string>Select a file</string>
           </property>
@@ -94,6 +105,11 @@
             <height>31</height>
            </size>
           </property>
+          <property name="font">
+           <font>
+            <pointsize>12</pointsize>
+           </font>
+          </property>
           <property name="text">
            <string>unarchive</string>
           </property>
@@ -109,6 +125,11 @@
             <width>120</width>
             <height>31</height>
            </size>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>12</pointsize>
+           </font>
           </property>
           <property name="text">
            <string>archive</string>
