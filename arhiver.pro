@@ -14,6 +14,7 @@ SOURCES += \
     huffman.cpp \
     huffmantree.cpp \
     main.cpp \
+    mtf.cpp \
     widget.cpp
 
 HEADERS += \
@@ -22,6 +23,7 @@ HEADERS += \
     fileworker.h \
     huffman.h \
     huffmantree.h \
+    mtf.h \
     widget.h
 
 FORMS += \
