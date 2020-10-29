@@ -3,10 +3,6 @@
 
 #include <QWidget>
 
-#include "bwt.h"
-#include "mtf.h"
-#include "huffman.h"
-
 QT_BEGIN_NAMESPACE
 namespace Ui { class Widget; }
 QT_END_NAMESPACE
@@ -19,8 +15,8 @@ public:
     Widget(QWidget *parent = nullptr);
     ~Widget();
 
-    const QString COMPRESS_EXTENSION = ".ibzip2";
-    const QString UNCOMPRESS_EXTENSION = ".uncomp";
+//    const QString COMPRESS_EXTENSION = ".ibzip2";
+//    const QString UNCOMPRESS_EXTENSION = ".uncomp";
 
 public slots:
     void onSelectFileButton();
