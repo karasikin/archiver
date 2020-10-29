@@ -3,7 +3,7 @@
 #include <QDebug>
 
 
-std::unique_ptr<QByteArray> BWT::encode(const QByteArray *string) const {
+std::unique_ptr<QByteArray> BWT::encode(const QByteArray *string) {
     auto transformedString = std::make_unique<QByteArray>();                    // Преобразованная строка
     auto buffer = QByteArray(*string);                           // В этой строке проводим преобразование
     auto stringSize = string->size();                            // Размер преобразованной строки
@@ -75,7 +75,7 @@ std::unique_ptr<QByteArray> BWT::encode(const QByteArray *string) const {
     return transformedString;
 }
 
-std::unique_ptr<QByteArray> BWT::decode(const QByteArray *transformedString) const {
+std::unique_ptr<QByteArray> BWT::decode(const QByteArray *transformedString) {
     const int OFFSET = 4;
 
     int primaryStringIndex =
@@ -120,4 +120,8 @@ std::unique_ptr<QByteArray> BWT::decode(const QByteArray *transformedString) con
     }
 
     return primaryString;
+}
+
+void BWT::createBuffer(QByteArray *buffer, const QByteArray *primaryString) {
+
 }

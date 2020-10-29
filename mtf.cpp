@@ -4,7 +4,7 @@
 #include <QList>
 #include <QDebug>
 
-std::unique_ptr<QByteArray> MTF::encode(const QByteArray *bytes) const {
+std::unique_ptr<QByteArray> MTF::encode(const QByteArray *bytes) {
     auto transformedBytes = std::make_unique<QByteArray>();
     auto catalog = QList<char>();
 
@@ -21,7 +21,7 @@ std::unique_ptr<QByteArray> MTF::encode(const QByteArray *bytes) const {
     return transformedBytes;
 }
 
-std::unique_ptr<QByteArray> MTF::decode(const QByteArray *transformedBytes) const {
+std::unique_ptr<QByteArray> MTF::decode(const QByteArray *transformedBytes) {
     auto primaryBytes = std::make_unique<QByteArray>();
     auto catalog = QList<char>();
 

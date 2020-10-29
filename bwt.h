@@ -10,9 +10,12 @@ class BWT
 
 public:
 
-    std::unique_ptr<QByteArray> encode(const QByteArray *string) const;
-    std::unique_ptr<QByteArray> decode(const QByteArray *transformedStiring) const;
+    static std::unique_ptr<QByteArray> encode(const QByteArray *string);
+    static std::unique_ptr<QByteArray> decode(const QByteArray *transformedStiring);
 
+private:
+
+    static void createBuffer(QByteArray *buffer, const QByteArray *primaryString);
 
 };
 

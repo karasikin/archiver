@@ -10,9 +10,6 @@
 Widget::Widget(QWidget *parent)
     : QWidget(parent),
       ui(new Ui::Widget),
-      bwt(),
-      mtf(),
-      huffman(),
       currentWorkingFile("")
 
 {
@@ -37,17 +34,17 @@ void Widget::onArchiveButton() {
     try {
         // Сжимаем
         auto input = FileWorker::readFromFile(currentWorkingFile);
-        auto bwtEncoded = bwt.encode(input.get());
-        auto mtfEncoded = mtf.encode(bwtEncoded.get());
-        auto frequensy = huffman.frequencyAnalysis(mtfEncoded.get());
-        auto huffmanEncoded = huffman.encode(mtfEncoded.get(), frequensy.get());
+        auto bwtEncoded = BWT::encode(input.get());
+        auto mtfEncoded = MTF::encode(bwtEncoded.get());
+        auto frequensy = Huffman::frequencyAnalysis(mtfEncoded.get());
+        auto huffmanEncoded = Huffman::encode(mtfEncoded.get(), frequensy.get());
 
         // Пишем в файл
-        FileWorker::writeToFile(currentWorkingFile + extension, huffmanEncoded.get());
+        FileWorker::writeToFile(currentWorkingFile + COMPRESS_EXTENSION, huffmanEncoded.get());
 
         // Выводим информацию для пользователя
         ui->informationTextEdit->append(QString("%1 >> %2").arg(currentWorkingFile)
-                                        .arg(currentWorkingFile + extension));
+                                        .arg(currentWorkingFile + COMPRESS_EXTENSION));
         ui->informationTextEdit->append(QString("{%1 K >> %2 K}")
                                         .arg(input->size() / 1024).arg(huffmanEncoded->size() / 1024));
     } catch(std::exception &ex) {
@@ -56,22 +53,22 @@ void Widget::onArchiveButton() {
 }
 
 void Widget::onUnarchiveButton() {
-    if(!currentWorkingFile.endsWith(extension)) {
+    if(!currentWorkingFile.endsWith(COMPRESS_EXTENSION)) {
         ui->informationTextEdit->append(QString("Error: file %1 does not have extension %2")
-                                        .arg(currentWorkingFile).arg(extension));
+                                        .arg(currentWorkingFile).arg(COMPRESS_EXTENSION));
         return;
     }
 
     try {
         // Разархивируем
         auto input = FileWorker::readFromFile(currentWorkingFile);
-        auto huffmanDecoded = huffman.decode(input.get());
-        auto mtfDecoded = mtf.decode(huffmanDecoded.get());
-        auto bwtDecoded = bwt.decode(mtfDecoded.get());
+        auto huffmanDecoded = Huffman::decode(input.get());
+        auto mtfDecoded = MTF::decode(huffmanDecoded.get());
+        auto bwtDecoded = BWT::decode(mtfDecoded.get());
 
         // Составляем имя выходного файла
         QString newName(currentWorkingFile);
-        newName.remove(newName.size() - extension.size(), extension.size());
+        newName.remove(newName.size() - COMPRESS_EXTENSION.size(), COMPRESS_EXTENSION.size());
         newName.append(".uncomp");
 
         // Пишем в файл

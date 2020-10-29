@@ -19,6 +19,9 @@ public:
     Widget(QWidget *parent = nullptr);
     ~Widget();
 
+    const QString COMPRESS_EXTENSION = ".ibzip2";
+    const QString UNCOMPRESS_EXTENSION = ".uncomp";
+
 public slots:
     void onSelectFileButton();
     void onArchiveButton();
@@ -27,11 +30,7 @@ public slots:
 private:
     Ui::Widget *ui;
 
-    BWT bwt;
-    MTF mtf;
-    Huffman huffman;
-
     QString currentWorkingFile;
-    const QString extension = ".ibzip2";
+
 };
 #endif // WIDGET_H

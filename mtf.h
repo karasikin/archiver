@@ -11,8 +11,8 @@ class MTF
 {
 
 public:
-    std::unique_ptr<QByteArray> encode(const QByteArray *bytes) const;
-    std::unique_ptr<QByteArray> decode(const QByteArray *transformedBytes) const;
+    static std::unique_ptr<QByteArray> encode(const QByteArray *bytes);
+    static std::unique_ptr<QByteArray> decode(const QByteArray *transformedBytes);
 
 private:
 
