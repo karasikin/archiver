@@ -14,10 +14,10 @@ HuffmanTree::DecodeIterator HuffmanTree::getDecodeIterator() const {
     return HuffmanTree::DecodeIterator(root);
 }
 
-const QMap<char, QVector<bool>> *HuffmanTree::getCodes() const {
-    auto codes = new QMap<char, QVector<bool>>;
+std::unique_ptr<QMap<char, QVector<bool>>> HuffmanTree::getCodes() const {
+    auto codes = std::make_unique<QMap<char, QVector<bool>>>();
 
-    getCodesHelper({}, codes, root);
+    getCodesHelper({}, codes.get(), root);
 
     return codes;
 }

@@ -1,6 +1,8 @@
 #ifndef BWT_H
 #define BWT_H
 
+#include <memory>
+
 class QByteArray;
 
 class BWT
@@ -8,8 +10,8 @@ class BWT
 
 public:
 
-    QByteArray *encode(const QByteArray &string) const;
-    QByteArray *decode(const QByteArray &transformedStiring) const;
+    std::unique_ptr<QByteArray> encode(const QByteArray *string) const;
+    std::unique_ptr<QByteArray> decode(const QByteArray *transformedStiring) const;
 
 
 };

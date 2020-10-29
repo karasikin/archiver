@@ -1,6 +1,7 @@
 #ifndef HUFFMANTREE_H
 #define HUFFMANTREE_H
 
+#include <memory>
 #include <QPair>
 #include <QString>
 
@@ -40,7 +41,7 @@ public:
 
     void insert(const QPair<QByteArray, int> &data);
     DecodeIterator getDecodeIterator() const;
-    const QMap<char, QVector<bool>> *getCodes() const;
+    std::unique_ptr<QMap<char, QVector<bool>>> getCodes() const;
 
 private:
     void insertHelper(const QPair<QByteArray, int> &data, Node **root);

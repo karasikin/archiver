@@ -34,20 +34,18 @@ void Widget::onSelectFileButton() {
 }
 
 void Widget::onArchiveButton() {
-    const QByteArray *input = nullptr;
-    const QByteArray *bwtEncoded = nullptr;
-    const QByteArray *mtfEncoded = nullptr;
-    const QMap<char, int> *frequensy = nullptr;
-    const QByteArray *huffmanEncoded = nullptr;
-
     try {
-        input = FileWorker::readFromFile(currentWorkingFile);
-        bwtEncoded = bwt.encode(*input);
-        mtfEncoded = mtf.encode(*bwtEncoded);
-        frequensy = huffman.frequencyAnalysis(*mtfEncoded);
-        huffmanEncoded = huffman.encode(*mtfEncoded, frequensy);
+        // Сжимаем
+        auto input = FileWorker::readFromFile(currentWorkingFile);
+        auto bwtEncoded = bwt.encode(input.get());
+        auto mtfEncoded = mtf.encode(bwtEncoded.get());
+        auto frequensy = huffman.frequencyAnalysis(mtfEncoded.get());
+        auto huffmanEncoded = huffman.encode(mtfEncoded.get(), frequensy.get());
 
-        FileWorker::writeToFile(currentWorkingFile + extension, *huffmanEncoded);
+        // Пишем в файл
+        FileWorker::writeToFile(currentWorkingFile + extension, huffmanEncoded.get());
+
+        // Выводим информацию для пользователя
         ui->informationTextEdit->append(QString("%1 >> %2").arg(currentWorkingFile)
                                         .arg(currentWorkingFile + extension));
         ui->informationTextEdit->append(QString("{%1 K >> %2 K}")
@@ -55,12 +53,6 @@ void Widget::onArchiveButton() {
     } catch(std::exception &ex) {
         ui->informationTextEdit->append(ex.what());
     }
-
-    delete huffmanEncoded;
-    delete frequensy;
-    delete mtfEncoded;
-    delete bwtEncoded;
-    delete input;
 }
 
 void Widget::onUnarchiveButton() {
@@ -70,29 +62,24 @@ void Widget::onUnarchiveButton() {
         return;
     }
 
-    const QByteArray *input = nullptr;
-    const QByteArray *mtfDecoded = nullptr;
-    const QByteArray *bwtDecoded = nullptr;
-    const QByteArray *huffmanDecoded = nullptr;
-
     try {
-        input = FileWorker::readFromFile(currentWorkingFile);
-        huffmanDecoded = huffman.decode(input);
-        mtfDecoded = mtf.decode(*huffmanDecoded);
-        bwtDecoded = bwt.decode(*mtfDecoded);
+        // Разархивируем
+        auto input = FileWorker::readFromFile(currentWorkingFile);
+        auto huffmanDecoded = huffman.decode(input.get());
+        auto mtfDecoded = mtf.decode(huffmanDecoded.get());
+        auto bwtDecoded = bwt.decode(mtfDecoded.get());
 
+        // Составляем имя выходного файла
         QString newName(currentWorkingFile);
         newName.remove(newName.size() - extension.size(), extension.size());
         newName.append(".uncomp");
 
-        FileWorker::writeToFile(newName, *bwtDecoded);
+        // Пишем в файл
+        FileWorker::writeToFile(newName, bwtDecoded.get());
+
+        // Выводим информацию для пользователей
         ui->informationTextEdit->append(QString("%1 >> %2").arg(currentWorkingFile).arg(newName));
     }  catch (std::exception &ex) {
         ui->informationTextEdit->append(ex.what());
     }
-
-    delete huffmanDecoded;
-    delete bwtDecoded;
-    delete mtfDecoded;
-    delete input;
 }

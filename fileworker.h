@@ -1,6 +1,8 @@
 #ifndef FILEWORKER_H
 #define FILEWORKER_H
 
+#include <memory>
+
 class QString;
 class QByteArray;
 
@@ -8,8 +10,8 @@ class FileWorker
 {
 
 public:
-    static const QByteArray *readFromFile(const QString &filename);
-    static void writeToFile(const QString &filename, const QByteArray &bytes);
+    static std::unique_ptr<QByteArray> readFromFile(const QString &filename);
+    static void writeToFile(const QString &filename, const QByteArray *bytes);
 
 private:
 

@@ -6,11 +6,10 @@
 
 #include "exception.h"
 
-const QByteArray *FileWorker::readFromFile(const QString &filename) {
-    auto bytes = new QByteArray;
+std::unique_ptr<QByteArray> FileWorker::readFromFile(const QString &filename) {
+    auto bytes = std::make_unique<QByteArray>();
 
     if(!QFile::exists(filename)) {
-        delete bytes;
         throw UnknownFileNameException(filename.toStdString());
     }
 
@@ -20,18 +19,17 @@ const QByteArray *FileWorker::readFromFile(const QString &filename) {
         *bytes = inputFile.readAll();
         inputFile.close();
     } else {
-        delete bytes;
         throw FileOpenErrorException(filename.toStdString());
     }
 
     return bytes;
 }
 
-void FileWorker::writeToFile(const QString &filename, const QByteArray &bytes) {
+void FileWorker::writeToFile(const QString &filename, const QByteArray *bytes) {
     QFile outputFile(filename);
 
     if(outputFile.open(QIODevice::WriteOnly)) {
-        outputFile.write(bytes);
+        outputFile.write(*bytes);
         outputFile.close();
     } else {
         throw FileOpenErrorException(filename.toStdString());
