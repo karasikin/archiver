@@ -132,7 +132,7 @@ void Huffman::pushIntIntoBlob(QByteArray *blob, int value) {
     blob->push_back(value);
 }
 
-int Huffman::extractIntFromBlob(QByteArray *blob, int start) {
+int Huffman::extractIntFromBlob(const QByteArray *blob, int start) {
     int byteA = int(uchar((*blob)[start]));
     int byteB = int(uchar((*blob)[start + 1]));
     int byteC = int(uchar((*blob)[start + 2]));

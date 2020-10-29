@@ -30,7 +30,7 @@ private:
 
     static void pushIntIntoBlob(QByteArray *blob, int value);
 
-    static int extractIntFromBlob(QByteArray *blob, int start);
+    static int extractIntFromBlob(const QByteArray *blob, int start);
 
 
     static std::unique_ptr<QMap<char, int>> decodeFrequency(QByteArray *code);

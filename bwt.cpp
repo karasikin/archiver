@@ -2,27 +2,68 @@
 
 #include <QDebug>
 
-
 std::unique_ptr<QByteArray> BWT::encode(const QByteArray *string) {
-    auto transformedString = std::make_unique<QByteArray>();                    // Преобразованная строка
-    auto buffer = QByteArray(*string);                           // В этой строке проводим преобразование
-    auto stringSize = string->size();                            // Размер преобразованной строки
-    auto stringMatrix = QVector<QByteArray::const_iterator>();  // Итераторы подстрок в буффере
-
-    // Заполняем буффер и вектор итераторов
+    auto transformedString = std::make_unique<QByteArray>();
+    auto buffer = QByteArray();
+    auto stringSize = string->size();
+    auto stringMatrix = QVector<QByteArray::const_iterator>();
 
     if(!string->isEmpty()) {
-        for(auto ch = string->cbegin(); ch != string->cend() - 1; ++ch) {
-                buffer += *ch;
-        }
-
-        for(auto it = buffer.cbegin(); it != buffer.cend() - stringSize + 1; ++it) {
-                stringMatrix.push_back(it);
-        }
+        createBuffer(buffer, string);
+        createStringMatrix(stringMatrix, buffer, stringSize);
     }
 
-    // Определяем функцию сравнения двух подстрок
+    sortStringMatrix(stringMatrix, stringSize);
 
+    for(const auto &it : stringMatrix) {
+        *transformedString += *(it + stringSize - 1);
+    }
+
+    auto stringNumber = findPrimaryStringNumber(stringMatrix, string);
+    pushIntIntoBlob(transformedString.get(), stringNumber);
+
+    return transformedString;
+}
+
+std::unique_ptr<QByteArray> BWT::decode(const QByteArray *transformedString) {
+    const int OFFSET = 4;
+
+    auto primaryStringSize = transformedString->size() - OFFSET;
+    auto primaryStringIndex = extractIntFromBlob(transformedString, primaryStringSize);
+
+    auto primaryString = std::make_unique<QByteArray>();
+    primaryString->resize(primaryStringSize);
+
+    auto firstCountTable = QVector<QPair<char, int>>();           // { Символ : Количество таких же символов до текущего в строке }
+    auto secondCountTable = QMap<char, int>();                    // { Символ : Количество "меньших" символов в строке
+
+    createFirstAndSecondTable(firstCountTable, secondCountTable, transformedString, OFFSET);
+
+    // Вычислям исходную строку
+
+    auto index = primaryStringIndex;
+    for(int i = transformedString->size() - 1 - OFFSET; i >= 0; --i) {
+        (*primaryString)[i] = firstCountTable[index].first;
+        index = firstCountTable[index].second + secondCountTable[firstCountTable[index].first];
+    }
+
+    return primaryString;
+}
+
+void BWT::createBuffer(QByteArray &buffer, const QByteArray *primaryString) {
+    buffer.append(*primaryString);
+    for(auto ch = primaryString->cbegin(); ch != primaryString->cend() - 1; ++ch) {
+            buffer += *ch;
+    }
+}
+
+void BWT::createStringMatrix(QVector<QByteArray::const_iterator> &stringMatrix, const QByteArray &buffer, int stringSize) {
+    for(auto it = buffer.cbegin(); it != buffer.cend() - stringSize + 1; ++it) {
+            stringMatrix.push_back(it);
+    }
+}
+
+void BWT::sortStringMatrix(QVector<QByteArray::const_iterator> &stringMatrix, int stringSize) {
     auto comp = [stringSize](const auto &first, const auto &second) {
         for(int i = 0; i <= stringSize; ++i) {
             if(*(first + i) > *(second + i)) {
@@ -36,25 +77,17 @@ std::unique_ptr<QByteArray> BWT::encode(const QByteArray *string) {
         return false;
     };
 
-    // Сортируем подстроки
-
     std::sort(stringMatrix.begin(), stringMatrix.end(), comp);
+}
 
-    // Формируем преобразованную строку
-
-    for(const auto &it : stringMatrix) {
-        *transformedString += *(it + stringSize - 1);
-    }
-
-    // Определяем номер строки
-
+int BWT::findPrimaryStringNumber(QVector<QByteArray::const_iterator> &stringMatrix, const QByteArray *primaryString) {
     auto stringNumber = int(0);
     for(int i = 0; i < stringMatrix.size(); ++i) {
         auto left = stringMatrix[i];
-        auto right = string->cbegin();
+        auto right = primaryString->cbegin();
         auto isEqual = bool(true);
 
-        while(right != string->cend()) {
+        while(right != primaryString->cend()) {
             if(*left++ != *right++) {
                 isEqual = false;
                 break;
@@ -67,61 +100,46 @@ std::unique_ptr<QByteArray> BWT::encode(const QByteArray *string) {
         }
     }
 
-    transformedString->push_back(stringNumber >> 24);
-    transformedString->push_back(stringNumber >> 16);
-    transformedString->push_back(stringNumber >> 8);
-    transformedString->push_back(stringNumber);
-
-    return transformedString;
+    return stringNumber;
 }
 
-std::unique_ptr<QByteArray> BWT::decode(const QByteArray *transformedString) {
-    const int OFFSET = 4;
+void BWT::pushIntIntoBlob(QByteArray *blob, int value) {
+    blob->push_back(value >> 24);
+    blob->push_back(value >> 16);
+    blob->push_back(value >> 8);
+    blob->push_back(value);
+}
 
-    int primaryStringIndex =
-            (int(uchar(*(transformedString->rbegin() + 3))) << 24) +
-            (int(uchar(*(transformedString->rbegin() + 2))) << 16) +
-            (int(uchar(*(transformedString->rbegin() + 1))) << 8) +
-            (int(uchar(*(transformedString->rbegin()))));
+int BWT::extractIntFromBlob(const QByteArray *blob, int start) {
+    int byteA = int(uchar((*blob)[start]));
+    int byteB = int(uchar((*blob)[start + 1]));
+    int byteC = int(uchar((*blob)[start + 2]));
+    int byteD = int(uchar((*blob)[start + 3]));
 
-    auto primaryString = std::make_unique<QByteArray>();
-    primaryString->resize(transformedString->size() - OFFSET);
-    auto firstCountTable = QVector<QPair<char, int>>();           // { Символ : Количество таких же символов до текущего в строке }
-    auto secondCountTable = QMap<char, int>();                    // { Символ : Количество "меньших" символов в строке
+    return (byteA << 24) + (byteB << 16) + (byteC << 8) + byteD;
+}
 
+void BWT::createFirstAndSecondTable(QVector<QPair<char, int>> &firstTable, QMap<char, int> &secondTable,
+                                    const QByteArray *string, const int offset) {
 
     // Формируем firstCountTable
 
-    for(auto ch = transformedString->cbegin(); ch != transformedString->cend() - OFFSET; ++ch) {
-        if(secondCountTable.contains(*ch)) {
-            firstCountTable.push_back({*ch, secondCountTable[*ch]});
+    for(auto ch = string->cbegin(); ch != string->cend() - offset; ++ch) {
+        if(secondTable.contains(*ch)) {
+            firstTable.push_back({*ch, secondTable[*ch]});
         } else {
-            firstCountTable.push_back({*ch, 0});
+            firstTable.push_back({*ch, 0});
         }
 
-        secondCountTable[*ch]++;
+        secondTable[*ch]++;
     }
 
     // Формируем SecondCountTable
 
     int sum = 0;
-    for(auto &item : secondCountTable) {
+    for(auto &item : secondTable) {
         int prevSum = sum;
         sum += item;
         item = prevSum;
     }
-
-    // Вычислям исходную строку
-
-    auto index = primaryStringIndex;
-    for(int i = transformedString->size() - 1 - OFFSET; i >= 0; --i) {
-        (*primaryString)[i] = firstCountTable[index].first;
-        index = firstCountTable[index].second + secondCountTable[firstCountTable[index].first];
-    }
-
-    return primaryString;
-}
-
-void BWT::createBuffer(QByteArray *buffer, const QByteArray *primaryString) {
-
 }
