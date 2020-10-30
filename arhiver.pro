@@ -11,7 +11,6 @@ CONFIG += c++17
 SOURCES += \
     archiver.cpp \
     bwt.cpp \
-    fileworker.cpp \
     huffman.cpp \
     huffmantree.cpp \
     main.cpp \
@@ -22,7 +21,6 @@ HEADERS += \
     archiver.h \
     bwt.h \
     exception.h \
-    fileworker.h \
     huffman.h \
     huffmantree.h \
     mtf.h \

@@ -146,7 +146,6 @@ std::unique_ptr<QMap<char, int>>Huffman::decodeFrequency(QByteArray *code) {
     auto frequency = std::make_unique<QMap<char, int>>();
     int currentCodeByte = 0;
 
-
     int frequencySize = extractIntFromBlob(code, 0);
     currentCodeByte += 4;
 

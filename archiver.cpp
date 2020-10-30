@@ -1,73 +1,117 @@
 #include "archiver.h"
 
 #include <QMap>
+#include <QDebug>
 
-#include "fileworker.h"
 #include "bwt.h"
 #include "mtf.h"
 #include "huffman.h"
 
+Archiver::Archiver(const QString &inputFilename, const QString &outputFilename, int compressBlockSize)
+    : inputFile(),
+      outputFile()
+{
+    setCompressBlockSize(compressBlockSize);
+
+    inputFile.setFileName(inputFilename);
+    outputFile.setFileName(outputFilename);
+}
+
 bool Archiver::compress() {
-    message.clear();
-
-    try {
-        // Сжимаем
-        auto input = FileWorker::readFromFile(inputFilename);
-        auto bwtEncoded = BWT::encode(input.get());
-        auto mtfEncoded = MTF::encode(bwtEncoded.get());
-        auto frequensy = Huffman::frequencyAnalysis(mtfEncoded.get());
-        auto huffmanEncoded = Huffman::encode(mtfEncoded.get(), frequensy.get());
-
-        // Пишем в файл
-        FileWorker::writeToFile(inputFilename + COMPRESS_EXTENSION, huffmanEncoded.get());
-
-        // Выводим информацию для пользователя
-        message.append(QString("%1 >> %2").arg(inputFilename)
-                                        .arg(inputFilename + COMPRESS_EXTENSION));
-        message.append(QString("{%1 K >> %2 K}")
-                                        .arg(input->size() / 1024).arg(huffmanEncoded->size() / 1024));
-    } catch(std::exception &ex) {
-        message.append(ex.what());
+    if(!openFiles()) {
         return false;
     }
+
+    while(!inputFile.atEnd()) {
+        auto input = readBlock(compressBlockSize);
+        auto bwtEncoded = BWT::encode(input.get());
+        auto mtfEnoded =MTF::encode(bwtEncoded.get());
+        auto frequency = Huffman::frequencyAnalysis(mtfEnoded.get());
+        auto huffmanEncoded = Huffman::encode(mtfEnoded.get(), frequency.get());
+
+        writeEncodedBlockSize(huffmanEncoded->size());
+        writeBlock(huffmanEncoded.get());
+    }
+
+    outputFile.flush();
+    inputFile.close();
+    outputFile.close();
 
     return true;
 }
 
 bool Archiver::uncompress() {
-    message.clear();
-
-    if(!inputFilename.endsWith(COMPRESS_EXTENSION)) {
-        message.append(QString("Error: file %1 does not have extension %2")
-                                        .arg(inputFilename).arg(COMPRESS_EXTENSION));
+    if(!openFiles()) {
         return false;
     }
 
-    try {
-        // Разархивируем
-        auto input = FileWorker::readFromFile(inputFilename);
+    while(!inputFile.atEnd()) {
+        int blockSize = readEncodedBlockSize();
+        auto input = readBlock(blockSize);
         auto huffmanDecoded = Huffman::decode(input.get());
         auto mtfDecoded = MTF::decode(huffmanDecoded.get());
         auto bwtDecoded = BWT::decode(mtfDecoded.get());
 
-        // Составляем имя выходного файла
-        QString newName(inputFilename);
-        newName.remove(newName.size() - COMPRESS_EXTENSION.size(), COMPRESS_EXTENSION.size());
-        newName.append(".uncomp");
-
-        // Пишем в файл
-        FileWorker::writeToFile(newName, bwtDecoded.get());
-
-        // Выводим информацию для пользователей
-        message.append(QString("%1 >> %2").arg(inputFilename).arg(newName));
-    }  catch (std::exception &ex) {
-        message.append(ex.what());
-        return false;
+        writeBlock(bwtDecoded.get());
     }
+
+    outputFile.flush();
+    inputFile.close();
+    outputFile.close();
 
     return true;
 }
 
 QString Archiver::getMessage() const{
     return message;
+}
+
+bool Archiver::openFiles() {
+    if(!QFile::exists(inputFile.fileName())) {
+        message = QString("File %1 not extits").arg(inputFile.fileName());
+        return false;
+    }
+
+    bool isInputFileOpen = inputFile.open(QIODevice::ReadOnly);
+    if(!isInputFileOpen) {
+        message = QString("File %1 not open").arg(inputFile.fileName());
+        return false;
+    }
+
+    bool isOutputFileOpen = outputFile.open(QIODevice::WriteOnly);
+    if(!isOutputFileOpen) {
+        message= QString("File %1 not open").arg(outputFile.fileName());
+        return false;
+    }
+
+    return true;
+}
+
+std::unique_ptr<QByteArray> Archiver::readBlock(int blockSize) {
+    auto input = std::make_unique<QByteArray>();
+    input->resize(blockSize);
+
+    *input = inputFile.read(blockSize);
+    return input;
+}
+
+void Archiver::writeBlock(const QByteArray *block) {
+    outputFile.write(*block);
+}
+
+int Archiver::readEncodedBlockSize() {
+    QByteArray sizeInt = inputFile.read(4);
+
+    return (int(uchar(sizeInt[0])) << 24) + (int(uchar(sizeInt[1])) << 16) +
+            (int(uchar(sizeInt[2])) << 8) + (int(uchar(sizeInt[3])));
+}
+
+void Archiver::writeEncodedBlockSize(int blockSize) {
+    QByteArray sizeInt;
+    sizeInt.push_back(blockSize >> 24);
+    sizeInt.push_back(blockSize >> 16);
+    sizeInt.push_back(blockSize >> 8);
+    sizeInt.push_back(blockSize);
+
+    outputFile.write(sizeInt);
 }

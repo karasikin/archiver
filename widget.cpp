@@ -30,13 +30,13 @@ void Widget::onSelectFileButton() {
 }
 
 void Widget::onArchiveButton() {
-    auto archiver = Archiver(currentWorkingFile);
-    archiver.compress();
-    ui->informationTextEdit->append(archiver.getMessage());
+//    auto archiver = Archiver(currentWorkingFile);
+//    archiver.compress();
+//    ui->informationTextEdit->append(archiver.getMessage());
 }
 
 void Widget::onUnarchiveButton() {
-    auto archiver = Archiver(currentWorkingFile);
-    archiver.uncompress();
-    ui->informationTextEdit->append(archiver.getMessage());
+//    auto archiver = Archiver(currentWorkingFile);
+//    archiver.uncompress();
+//    ui->informationTextEdit->append(archiver.getMessage());
 }
