@@ -8,10 +8,12 @@ std::unique_ptr<QByteArray> BWT::encode(const QByteArray *string) {
     auto stringSize = string->size();
     auto stringMatrix = QVector<QByteArray::const_iterator>();
 
-    if(!string->isEmpty()) {
-        createBuffer(buffer, string);
-        createStringMatrix(stringMatrix, buffer, stringSize);
+    if(string->isEmpty()) {
+        return transformedString;
     }
+
+    createBuffer(buffer, string);
+    createStringMatrix(stringMatrix, buffer, stringSize);
 
     sortStringMatrix(stringMatrix, stringSize);
 

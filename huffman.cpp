@@ -150,13 +150,13 @@ std::unique_ptr<QMap<char, int>>Huffman::decodeFrequency(QByteArray *code) {
     int frequencySize = extractIntFromBlob(code, 0);
     currentCodeByte += 4;
 
+    if(frequencySize < 0 || frequencySize >= code->size() - 4) {
+        throw BadCodeException();
+    }
+
     while(frequencySize--) {
         QByteArray record;
         for(int i = 0; i < RECORD_BYTE_SIZE; ++i) {
-            if(code->isEmpty()) {
-                throw BadCodeException();
-            }
-
             record.push_back((*code)[currentCodeByte++]);
         }
 
