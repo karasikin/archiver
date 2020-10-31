@@ -20,6 +20,7 @@ SOURCES += \
 HEADERS += \
     archiver.h \
     bwt.h \
+    byteconverter.h \
     exception.h \
     huffman.h \
     huffmantree.h \

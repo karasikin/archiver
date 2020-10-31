@@ -24,9 +24,12 @@ bool Archiver::compress() {
 
     while(!inputFile.atEnd()) {
         auto input = readBlock(compressBlockSize);
-        auto bwtEncoded = BWT::encode(input.get());
-        auto mtfEnoded =MTF::encode(bwtEncoded.get());
-        auto huffmanEncoded = Huffman::encode(mtfEnoded.get());
+        BWT bwt;
+        auto bwtEncoded = bwt.encode(std::move(input));
+        MTF mtf;
+        auto mtfEnoded = mtf.encode(std::move(bwtEncoded));
+        Huffman huffman;
+        auto huffmanEncoded = huffman.encode(std::move(mtfEnoded));
 
         writeEncodedBlockSize(huffmanEncoded->size());
         writeBlock(huffmanEncoded.get());
@@ -47,9 +50,12 @@ bool Archiver::uncompress() {
     while(!inputFile.atEnd()) {
         int blockSize = readEncodedBlockSize();
         auto input = readBlock(blockSize);
-        auto huffmanDecoded = Huffman::decode(input.get());
-        auto mtfDecoded = MTF::decode(huffmanDecoded.get());
-        auto bwtDecoded = BWT::decode(mtfDecoded.get());
+        Huffman huffman;
+        auto huffmanDecoded = huffman.decode(std::move(input));
+        MTF mtf;
+        auto mtfDecoded = mtf.decode(std::move(huffmanDecoded));
+        BWT bwt;
+        auto bwtDecoded = bwt.decode(std::move(mtfDecoded));
 
         writeBlock(bwtDecoded.get());
     }

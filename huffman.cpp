@@ -11,18 +11,19 @@
 
 
 
-std::unique_ptr<QByteArray> Huffman::encode(const QByteArray *bytes) {
-    auto frequency = frequencyAnalysis(bytes);
+std::unique_ptr<QByteArray> Huffman::encode(std::unique_ptr<QByteArray> bytes) {
+    auto frequency = frequencyAnalysis(bytes.get());
     auto nodeStack = buildNodeStack(frequency.get());
     auto codeMap = buildCodesMap(nodeStack.get());
-    auto code = encodeString(bytes, codeMap.get(), frequency.get());
+    auto code = encodeString(bytes.get(), codeMap.get(), frequency.get());
 
     return code;
 }
 
-std::unique_ptr<QByteArray> Huffman::decode(const QByteArray *code) {
-    auto transformedCode = std::make_unique<QByteArray>(*code);
-    auto frequency = decodeFrequency(transformedCode.get());
+std::unique_ptr<QByteArray> Huffman::decode(std::unique_ptr<QByteArray> bytes) {
+    //auto transformedCode = std::make_unique<QByteArray>(bytes.get());
+    //auto frequency = decodeFrequency(transformedCode.get());
+    auto frequency = decodeFrequency(bytes.get());
     auto nodeStack = buildNodeStack(frequency.get());
 
     HuffmanTree codeTree;
@@ -30,7 +31,8 @@ std::unique_ptr<QByteArray> Huffman::decode(const QByteArray *code) {
         codeTree.insert(nodeStack->pop());
     }
 
-    auto decoded = decodeString(codeTree, transformedCode.get());
+    //auto decoded = decodeString(codeTree, transformedCode.get());
+    auto decoded = decodeString(codeTree, bytes.get());
 
     return decoded;
 }
@@ -128,21 +130,21 @@ std::unique_ptr<QByteArray> Huffman::encodeString(const QByteArray *bytes,
     return encoded;
 }
 
-void Huffman::pushIntIntoBlob(QByteArray *blob, int value) {
-    blob->push_back(value >> 24);
-    blob->push_back(value >> 16);
-    blob->push_back(value >> 8);
-    blob->push_back(value);
-}
+//void Huffman::pushIntIntoBlob(QByteArray *blob, int value) {
+//    blob->push_back(value >> 24);
+//    blob->push_back(value >> 16);
+//    blob->push_back(value >> 8);
+//    blob->push_back(value);
+//}
 
-int Huffman::extractIntFromBlob(const QByteArray *blob, int start) {
-    int byteA = int(uchar((*blob)[start]));
-    int byteB = int(uchar((*blob)[start + 1]));
-    int byteC = int(uchar((*blob)[start + 2]));
-    int byteD = int(uchar((*blob)[start + 3]));
+//int Huffman::extractIntFromBlob(const QByteArray *blob, int start) {
+//    int byteA = int(uchar((*blob)[start]));
+//    int byteB = int(uchar((*blob)[start + 1]));
+//    int byteC = int(uchar((*blob)[start + 2]));
+//    int byteD = int(uchar((*blob)[start + 3]));
 
-    return (byteA << 24) + (byteB << 16) + (byteC << 8) + byteD;
-}
+//    return (byteA << 24) + (byteB << 16) + (byteC << 8) + byteD;
+//}
 
 std::unique_ptr<QMap<char, int>>Huffman::decodeFrequency(QByteArray *code) {
     const int RECORD_BYTE_SIZE = 5;

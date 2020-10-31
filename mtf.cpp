@@ -1,10 +1,9 @@
 #include "mtf.h"
 
-#include <QByteArray>
 #include <QList>
 #include <QDebug>
 
-std::unique_ptr<QByteArray> MTF::encode(const QByteArray *bytes) {
+std::unique_ptr<QByteArray> MTF::encode(std::unique_ptr<QByteArray> bytes) {
     auto transformedBytes = std::make_unique<QByteArray>();
     auto catalog = QList<char>();
 
@@ -21,7 +20,7 @@ std::unique_ptr<QByteArray> MTF::encode(const QByteArray *bytes) {
     return transformedBytes;
 }
 
-std::unique_ptr<QByteArray> MTF::decode(const QByteArray *transformedBytes) {
+std::unique_ptr<QByteArray> MTF::decode(std::unique_ptr<QByteArray> bytes) {
     auto primaryBytes = std::make_unique<QByteArray>();
     auto catalog = QList<char>();
 
@@ -29,7 +28,7 @@ std::unique_ptr<QByteArray> MTF::decode(const QByteArray *transformedBytes) {
         catalog.push_back(i);
     }
 
-    for(const auto ch : *transformedBytes) {
+    for(const auto ch : *bytes) {
         primaryBytes->push_back(catalog[uchar(ch)]);
         catalog.move(uchar(ch), 0);
     }

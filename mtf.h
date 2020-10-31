@@ -1,18 +1,15 @@
 #ifndef MTF_H
 #define MTF_H
 
-#include <memory>
+#include "byteconverter.h"
 
-class QByteArray;
-
-// Нуждается в тестах..........................
-
-class MTF
-{
+class MTF : public ByteConverter {
 
 public:
-    static std::unique_ptr<QByteArray> encode(const QByteArray *bytes);
-    static std::unique_ptr<QByteArray> decode(const QByteArray *transformedBytes);
+    MTF() : ByteConverter() {}
+
+    std::unique_ptr<QByteArray> encode(std::unique_ptr<QByteArray> bytes) override;
+    std::unique_ptr<QByteArray> decode(std::unique_ptr<QByteArray> bytes) override;
 
 private:
 

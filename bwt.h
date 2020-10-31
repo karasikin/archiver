@@ -1,28 +1,25 @@
 #ifndef BWT_H
 #define BWT_H
 
-#include <memory>
-#include <QByteArray>
+#include "byteconverter.h"
 
 template <class K, class V> class QPair;
 
-class BWT
-{
+class BWT : public ByteConverter {
 
 public:
+    BWT() : ByteConverter() {}
 
-    static std::unique_ptr<QByteArray> encode(const QByteArray *string);
-    static std::unique_ptr<QByteArray> decode(const QByteArray *transformedStiring);
+    std::unique_ptr<QByteArray> encode(std::unique_ptr<QByteArray> bytes) override;
+    std::unique_ptr<QByteArray> decode(std::unique_ptr<QByteArray> bytes) override;
 
 private:
 
-    static void createBuffer(QByteArray &buffer, const QByteArray *primaryString);
-    static void createStringMatrix(QVector<QByteArray::const_iterator> &stringMatrix, const QByteArray &buffer, int stringSize);
-    static void sortStringMatrix(QVector<QByteArray::const_iterator> &stringMatrix, int stringSize);
-    static int findPrimaryStringNumber(QVector<QByteArray::const_iterator> &stringMatrix, const QByteArray *primaryString);
-    static void pushIntIntoBlob(QByteArray *blob, int value);
-    static int extractIntFromBlob(const QByteArray *blob, int start);
-    static void createFirstAndSecondTable(QVector<QPair<char, int>> &firstTable, QMap<char, int> &secondTable,
+    void createBuffer(QByteArray &buffer, const QByteArray *primaryString);
+    void createStringMatrix(QVector<QByteArray::const_iterator> &stringMatrix, const QByteArray &buffer, int stringSize);
+    void sortStringMatrix(QVector<QByteArray::const_iterator> &stringMatrix, int stringSize);
+    int findPrimaryStringNumber(QVector<QByteArray::const_iterator> &stringMatrix, const QByteArray *primaryString);
+    void createFirstAndSecondTable(QVector<QPair<char, int>> &firstTable, QMap<char, int> &secondTable,
                                           const QByteArray *string, const int offset);
 
 };

@@ -1,41 +1,34 @@
 #ifndef HUFFMAN_H
 #define HUFFMAN_H
 
-#include <memory>
-#include <QString>
-#include <QPair>
+#include "byteconverter.h"
 
 class HuffmanTree;
+template <class K, class V> class QPair;
 
-
-class Huffman
+class Huffman : ByteConverter
 {
 
 public:
 
-    static std::unique_ptr<QByteArray> encode(const QByteArray *bytes);
+    std::unique_ptr<QByteArray> encode(std::unique_ptr<QByteArray> bytes) override;
 
-    static std::unique_ptr<QByteArray> decode(const QByteArray *code);
+    std::unique_ptr<QByteArray> decode(std::unique_ptr<QByteArray> bytes) override;
 
 private:
 
-    static std::unique_ptr<QMap<char, int>> frequencyAnalysis(const QByteArray *bytes);
+    std::unique_ptr<QMap<char, int>> frequencyAnalysis(const QByteArray *bytes);
 
-    static std::unique_ptr<QStack<QPair<QByteArray, int>>> buildNodeStack(const QMap<char, int> *frequency);
+    std::unique_ptr<QStack<QPair<QByteArray, int>>> buildNodeStack(const QMap<char, int> *frequency);
 
-    static std::unique_ptr<QMap<char, QVector<bool>>> buildCodesMap(QStack<QPair<QByteArray, int>> *nodeStack);
+    std::unique_ptr<QMap<char, QVector<bool>>> buildCodesMap(QStack<QPair<QByteArray, int>> *nodeStack);
 
-    static std::unique_ptr<QByteArray> encodeString(const QByteArray *bytes, const QMap<char, QVector<bool>> *codeMap,
+    std::unique_ptr<QByteArray> encodeString(const QByteArray *bytes, const QMap<char, QVector<bool>> *codeMap,
                                                const QMap<char, int> *frequency);
 
-    static void pushIntIntoBlob(QByteArray *blob, int value);
+    std::unique_ptr<QMap<char, int>> decodeFrequency(QByteArray *code);
 
-    static int extractIntFromBlob(const QByteArray *blob, int start);
-
-
-    static std::unique_ptr<QMap<char, int>> decodeFrequency(QByteArray *code);
-
-    static std::unique_ptr<QByteArray> decodeString(const HuffmanTree &tree, QByteArray *code);
+    std::unique_ptr<QByteArray> decodeString(const HuffmanTree &tree, QByteArray *code);
 
 };
 
