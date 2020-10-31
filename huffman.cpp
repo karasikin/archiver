@@ -9,18 +9,13 @@
 #include "huffmantree.h"
 #include "exception.h"
 
-std::unique_ptr<QMap<char, int>> Huffman::frequencyAnalysis(const QByteArray *bytes) {
-    auto frequency = std::make_unique<QMap<char, int>>();
-    for(const auto &ch : *bytes)
-        (*frequency)[ch]++;
 
-    return frequency;
-}
 
-std::unique_ptr<QByteArray> Huffman::encode(const QByteArray *bytes, const QMap<char, int> *frequency) {
-    auto nodeStack = buildNodeStack(frequency);
+std::unique_ptr<QByteArray> Huffman::encode(const QByteArray *bytes) {
+    auto frequency = frequencyAnalysis(bytes);
+    auto nodeStack = buildNodeStack(frequency.get());
     auto codeMap = buildCodesMap(nodeStack.get());
-    auto code = encodeString(bytes, codeMap.get(), frequency);
+    auto code = encodeString(bytes, codeMap.get(), frequency.get());
 
     return code;
 }
@@ -38,6 +33,14 @@ std::unique_ptr<QByteArray> Huffman::decode(const QByteArray *code) {
     auto decoded = decodeString(codeTree, transformedCode.get());
 
     return decoded;
+}
+
+std::unique_ptr<QMap<char, int>> Huffman::frequencyAnalysis(const QByteArray *bytes) {
+    auto frequency = std::make_unique<QMap<char, int>>();
+    for(const auto &ch : *bytes)
+        (*frequency)[ch]++;
+
+    return frequency;
 }
 
 std::unique_ptr<QStack<QPair<QByteArray, int>>> Huffman::buildNodeStack(const QMap<char, int> *frequency) {

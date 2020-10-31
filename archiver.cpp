@@ -26,8 +26,7 @@ bool Archiver::compress() {
         auto input = readBlock(compressBlockSize);
         auto bwtEncoded = BWT::encode(input.get());
         auto mtfEnoded =MTF::encode(bwtEncoded.get());
-        auto frequency = Huffman::frequencyAnalysis(mtfEnoded.get());
-        auto huffmanEncoded = Huffman::encode(mtfEnoded.get(), frequency.get());
+        auto huffmanEncoded = Huffman::encode(mtfEnoded.get());
 
         writeEncodedBlockSize(huffmanEncoded->size());
         writeBlock(huffmanEncoded.get());
@@ -61,6 +60,16 @@ bool Archiver::uncompress() {
 
     return true;
 }
+
+//std::unique_ptr<QMap<char, int>> Archiver::getFrequency(const QByteArray *bytes) {
+//    auto frequency = std::make_unique<QMap<char, int>>();
+
+//    for(const auto ch : *bytes) {
+//        (*frequency)[ch]++;
+//    }
+
+//    return frequency;
+//}
 
 QString Archiver::getMessage() const{
     return message;

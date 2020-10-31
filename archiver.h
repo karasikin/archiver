@@ -18,6 +18,8 @@ public:
     bool compress();
     bool uncompress();
 
+    static std::unique_ptr<QMap<char, int>> getFrequency(const QByteArray *bytes);
+
     QString getMessage() const;
 
     int getCompressBlockSize() const { return compressBlockSize; }

@@ -13,13 +13,13 @@ class Huffman
 
 public:
 
-    static std::unique_ptr<QMap<char, int>> frequencyAnalysis(const QByteArray *bytes);
-
-    static std::unique_ptr<QByteArray> encode(const QByteArray *bytes, const QMap<char, int> *frequency);
+    static std::unique_ptr<QByteArray> encode(const QByteArray *bytes);
 
     static std::unique_ptr<QByteArray> decode(const QByteArray *code);
 
 private:
+
+    static std::unique_ptr<QMap<char, int>> frequencyAnalysis(const QByteArray *bytes);
 
     static std::unique_ptr<QStack<QPair<QByteArray, int>>> buildNodeStack(const QMap<char, int> *frequency);
 

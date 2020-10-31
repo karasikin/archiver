@@ -16,10 +16,10 @@ int main(int argc, char *argv[]) {
 //    Archiver archiverUncomp("../files/code.dat", "../files/text.uncomp");
 //    qDebug() << archiverUncomp.uncompress();
 
-        Archiver archiverComp("../files/test/C++.tar", "../files/test/C++.tar.code", 900 * 1024);
+        Archiver archiverComp("../files/text.txt", "../files/text.txt.code", 900 * 1024);
         qDebug() << archiverComp.compress();
 
-        Archiver archiverUncomp("../files/test/C++.tar.code", "../files/test/C++.uncode.tar");
+        Archiver archiverUncomp("../files/text.txt.code", "../files/text.txt.uncode");
         qDebug() << archiverUncomp.uncompress();
 
     QApplication a(argc, argv);
