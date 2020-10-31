@@ -3,9 +3,8 @@
 #include <QMap>
 #include <QDebug>
 
-#include "bwt.h"
-#include "mtf.h"
-#include "huffman.h"
+#include "byteconverter.h"
+#include "exception.h"
 
 Archiver::Archiver(const QString &inputFilename, const QString &outputFilename, int compressBlockSize)
     : inputFile(),
@@ -17,22 +16,26 @@ Archiver::Archiver(const QString &inputFilename, const QString &outputFilename, 
     outputFile.setFileName(outputFilename);
 }
 
+Archiver::~Archiver() {
+    for(auto ptr : convertingAlgorithms) {
+        delete ptr;
+    }
+}
+
 bool Archiver::compress() {
     if(!openFiles()) {
         return false;
     }
 
     while(!inputFile.atEnd()) {
-        auto input = readBlock(compressBlockSize);
-        BWT bwt;
-        auto bwtEncoded = bwt.encode(std::move(input));
-        MTF mtf;
-        auto mtfEnoded = mtf.encode(std::move(bwtEncoded));
-        Huffman huffman;
-        auto huffmanEncoded = huffman.encode(std::move(mtfEnoded));
+        auto currentBytes = readBlock(compressBlockSize);
 
-        writeEncodedBlockSize(huffmanEncoded->size());
-        writeBlock(huffmanEncoded.get());
+        for(auto item : convertingAlgorithms) {
+            currentBytes = item->encode(std::move(currentBytes));
+        }
+
+        writeEncodedBlockSize(currentBytes->size());
+        writeBlock(currentBytes.get());
     }
 
     outputFile.flush();
@@ -48,16 +51,27 @@ bool Archiver::uncompress() {
     }
 
     while(!inputFile.atEnd()) {
-        int blockSize = readEncodedBlockSize();
-        auto input = readBlock(blockSize);
-        Huffman huffman;
-        auto huffmanDecoded = huffman.decode(std::move(input));
-        MTF mtf;
-        auto mtfDecoded = mtf.decode(std::move(huffmanDecoded));
-        BWT bwt;
-        auto bwtDecoded = bwt.decode(std::move(mtfDecoded));
+        try {
+            int blockSize = readEncodedBlockSize();
+            if(blockSize <= 0) {
+                throw BadCodeException();
+            }
 
-        writeBlock(bwtDecoded.get());
+            auto currentBytes = readBlock(blockSize);
+
+            for(auto it = convertingAlgorithms.rbegin(); it != convertingAlgorithms.rend(); ++it) {
+                currentBytes = (*it)->decode(std::move(currentBytes));
+            }
+
+            writeBlock(currentBytes.get());
+
+        } catch(std::exception &ex) {
+            outputFile.flush();
+            inputFile.close();
+            outputFile.close();
+            message = ex.what();
+            return false;
+        }
     }
 
     outputFile.flush();
@@ -67,15 +81,9 @@ bool Archiver::uncompress() {
     return true;
 }
 
-//std::unique_ptr<QMap<char, int>> Archiver::getFrequency(const QByteArray *bytes) {
-//    auto frequency = std::make_unique<QMap<char, int>>();
-
-//    for(const auto ch : *bytes) {
-//        (*frequency)[ch]++;
-//    }
-
-//    return frequency;
-//}
+void Archiver::addConvertingAlgorithms(ByteConverter *convertingAlgorithm) {
+    convertingAlgorithms.push_back(convertingAlgorithm);
+}
 
 QString Archiver::getMessage() const{
     return message;

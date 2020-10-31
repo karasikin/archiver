@@ -130,22 +130,6 @@ std::unique_ptr<QByteArray> Huffman::encodeString(const QByteArray *bytes,
     return encoded;
 }
 
-//void Huffman::pushIntIntoBlob(QByteArray *blob, int value) {
-//    blob->push_back(value >> 24);
-//    blob->push_back(value >> 16);
-//    blob->push_back(value >> 8);
-//    blob->push_back(value);
-//}
-
-//int Huffman::extractIntFromBlob(const QByteArray *blob, int start) {
-//    int byteA = int(uchar((*blob)[start]));
-//    int byteB = int(uchar((*blob)[start + 1]));
-//    int byteC = int(uchar((*blob)[start + 2]));
-//    int byteD = int(uchar((*blob)[start + 3]));
-
-//    return (byteA << 24) + (byteB << 16) + (byteC << 8) + byteD;
-//}
-
 std::unique_ptr<QMap<char, int>>Huffman::decodeFrequency(QByteArray *code) {
     const int RECORD_BYTE_SIZE = 5;
     auto frequency = std::make_unique<QMap<char, int>>();

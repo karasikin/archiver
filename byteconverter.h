@@ -9,6 +9,9 @@ class ByteConverter {
 
 public:
 
+    ByteConverter() {}
+    virtual ~ByteConverter() {}
+
     virtual std::unique_ptr<QByteArray> encode(std::unique_ptr<QByteArray> bytes) = 0;
     virtual std::unique_ptr<QByteArray> decode(std::unique_ptr<QByteArray> bytes) = 0;
 

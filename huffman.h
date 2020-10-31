@@ -6,7 +6,7 @@
 class HuffmanTree;
 template <class K, class V> class QPair;
 
-class Huffman : ByteConverter
+class Huffman : public ByteConverter
 {
 
 public:

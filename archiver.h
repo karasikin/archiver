@@ -5,6 +5,9 @@
 #include <QString>
 #include <QFile>
 
+class ByteConverter;
+
+
 class Archiver
 {
 
@@ -13,12 +16,13 @@ public:
 //    const QString COMPRESS_EXTENSION = ".ibzip2";
 //    const QString UNCOMPRESS_EXTENSION = ".uncomp";
 
-    Archiver(const QString &inputFilename, const QString &outputFilename, int compressBlockSize = 10 * 1024);
+    Archiver(const QString &inputFilename, const QString &outputFilename, int compressBlockSize = 100 * 1024);
+    ~Archiver();
 
     bool compress();
     bool uncompress();
 
-    static std::unique_ptr<QMap<char, int>> getFrequency(const QByteArray *bytes);
+    void addConvertingAlgorithms(ByteConverter *convertingAlgorithm);
 
     QString getMessage() const;
 
@@ -39,6 +43,8 @@ private:
 
     QFile inputFile;
     QFile outputFile;
+
+    QVector<ByteConverter *> convertingAlgorithms;
 
     int compressBlockSize;
 
