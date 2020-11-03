@@ -8,15 +8,14 @@
 class ByteConverter;
 
 
-class Archiver
+class Archiver : public QObject
 {
+    Q_OBJECT
 
 public:
 
-//    const QString COMPRESS_EXTENSION = ".ibzip2";
-//    const QString UNCOMPRESS_EXTENSION = ".uncomp";
-
-    Archiver(const QString &inputFilename, const QString &outputFilename, int compressBlockSize = 100 * 1024);
+    Archiver(const QString &inputFilename, const QString &outputFilename,
+             int compressBlockSize = 100 * 1024, QObject *parent = nullptr);
     ~Archiver();
 
     bool compress();
@@ -28,6 +27,12 @@ public:
 
     int getCompressBlockSize() const { return compressBlockSize; }
     void setCompressBlockSize(int blockSize) { this->compressBlockSize = blockSize; }
+
+signals:
+    void blockCompressed(int blockSize);
+    void blockUncompressed(int blockSize);
+    void startCompress(int inputFileSize);
+    void startUncompress(int inputFileSize);
 
 private:
 

@@ -1,8 +1,5 @@
 #include "huffman.h"
 
-#include <QByteArray>
-#include <QList>
-#include <QMap>
 #include <QStack>
 #include <QDebug>
 
@@ -21,8 +18,6 @@ std::unique_ptr<QByteArray> Huffman::encode(std::unique_ptr<QByteArray> bytes) {
 }
 
 std::unique_ptr<QByteArray> Huffman::decode(std::unique_ptr<QByteArray> bytes) {
-    //auto transformedCode = std::make_unique<QByteArray>(bytes.get());
-    //auto frequency = decodeFrequency(transformedCode.get());
     auto frequency = decodeFrequency(bytes.get());
     auto nodeStack = buildNodeStack(frequency.get());
 

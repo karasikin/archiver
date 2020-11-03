@@ -1,13 +1,14 @@
 #include "archiver.h"
 
-#include <QMap>
 #include <QDebug>
 
 #include "byteconverter.h"
 #include "exception.h"
 
-Archiver::Archiver(const QString &inputFilename, const QString &outputFilename, int compressBlockSize)
-    : inputFile(),
+Archiver::Archiver(const QString &inputFilename, const QString &outputFilename,
+                   int compressBlockSize, QObject *parent)
+    : QObject(parent),
+      inputFile(),
       outputFile()
 {
     setCompressBlockSize(compressBlockSize);
@@ -27,6 +28,8 @@ bool Archiver::compress() {
         return false;
     }
 
+    emit startCompress(inputFile.size());
+
     while(!inputFile.atEnd()) {
         auto currentBytes = readBlock(compressBlockSize);
 
@@ -36,6 +39,8 @@ bool Archiver::compress() {
 
         writeEncodedBlockSize(currentBytes->size());
         writeBlock(currentBytes.get());
+
+        emit blockCompressed(compressBlockSize);
     }
 
     outputFile.flush();
@@ -50,6 +55,8 @@ bool Archiver::uncompress() {
         return false;
     }
 
+    emit startUncompress(inputFile.size());
+
     while(!inputFile.atEnd()) {
         try {
             int blockSize = readEncodedBlockSize();
@@ -59,17 +66,20 @@ bool Archiver::uncompress() {
 
             auto currentBytes = readBlock(blockSize);
 
-            for(auto it = convertingAlgorithms.rbegin(); it != convertingAlgorithms.rend(); ++it) {
-                currentBytes = (*it)->decode(std::move(currentBytes));
+            for(auto item : convertingAlgorithms) {
+                currentBytes = item->decode(std::move(currentBytes));
             }
 
             writeBlock(currentBytes.get());
+
+            emit blockUncompressed(blockSize);
 
         } catch(std::exception &ex) {
             outputFile.flush();
             inputFile.close();
             outputFile.close();
             message = ex.what();
+
             return false;
         }
     }
